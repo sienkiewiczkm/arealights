@@ -1,0 +1,22 @@
+# Default CMake directories
+build
+
+# vim temporary files
+*.swo
+*.swn
+*.swp
+
+# vim custom settings
+.lvimrc
+
+# temporary files
+*~
+
+# CLion
+.idea/
+
+# YCM files
+.ycm_extra*
+
+# OSX
+.DS_Store
