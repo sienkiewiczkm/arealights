@@ -41,6 +41,7 @@ set(AREALIGHTS_DEPENDENCIES_SOURCE_FILES
 set(AREALIGHTS_SOURCE_FILES
   source/Application.cpp
   source/Common.cpp
+  source/DeferredRenderingPipeline.cpp
   source/Effect.cpp
   source/Framework.cpp
   source/FreeCamera.cpp

@@ -4,11 +4,14 @@
 #include "Application.hpp"
 #include "BasicMeshes.cpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "imgui.h"
 
 namespace arealights
 {
 
-Application::Application()
+Application::Application():
+    _quadVAO{0},
+    _quadVBO{0}
 {
 }
 
@@ -25,18 +28,35 @@ void Application::onCreate()
         planeMesh.vertices, planeMesh.indices
     );
 
-    fw::Shader vertexShader;
-    vertexShader.addSourceFromFile("../assets/DebugShader.vs");
-    vertexShader.compile(GL_VERTEX_SHADER);
+    {
+        fw::Shader vertexShader;
+        vertexShader.addSourceFromFile("../assets/DebugShader.vs");
+        vertexShader.compile(GL_VERTEX_SHADER);
 
-    fw::Shader fragmentShader;
-    fragmentShader.addSourceFromFile("../assets/DebugShader.fs");
-    fragmentShader.compile(GL_FRAGMENT_SHADER);
+        fw::Shader fragmentShader;
+        fragmentShader.addSourceFromFile("../assets/DebugShader.fs");
+        fragmentShader.compile(GL_FRAGMENT_SHADER);
 
-    _shaderProgram = std::make_unique<fw::ShaderProgram>();
-    _shaderProgram->attach(&vertexShader);
-    _shaderProgram->attach(&fragmentShader);
-    _shaderProgram->link();
+        _shaderProgram = std::make_unique<fw::ShaderProgram>();
+        _shaderProgram->attach(&vertexShader);
+        _shaderProgram->attach(&fragmentShader);
+        _shaderProgram->link();
+    }
+
+    {
+        fw::Shader vertexShader, fragmentShader;
+
+        vertexShader.addSourceFromFile("../assets/TextureBlit.vs");
+        vertexShader.compile(GL_VERTEX_SHADER);
+
+        fragmentShader.addSourceFromFile("../assets/TextureBlit.fs");
+        fragmentShader.compile(GL_FRAGMENT_SHADER);
+
+        _textureBlitShader = std::make_unique<fw::ShaderProgram>();
+        _textureBlitShader->attach(&vertexShader);
+        _textureBlitShader->attach(&fragmentShader);
+        _textureBlitShader->link();
+    }
 
     _camera = std::make_shared<fw::FreeCamera>();
     _camera->setWorldPosition({0.0f, 1.0f, 5.0f});
@@ -47,6 +67,9 @@ void Application::onCreate()
     _cameraInputMapper.setCamera(_camera);
     _cameraInputMapper.setKeyboardInput(_keyboardInput);
     _cameraInputMapper.setMouseInput(_mouseInput);
+
+    _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
+    _deferredPipeline->create({1600, 1200});
 }
 
 void Application::onDestroy()
@@ -64,25 +87,42 @@ void Application::onUpdate(
 
 void Application::onRender()
 {
+    auto framebufferSize = getFramebufferSize();
+    auto aspectRatio = static_cast<float>(framebufferSize.x) / framebufferSize.y;
+
+    auto viewMatrix = _camera->getViewMatrix();
+    auto projMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+
+    _deferredPipeline->startGeometryPass();
+    _deferredPipeline->setViewMatrix(viewMatrix);
+    _deferredPipeline->setProjectionMatrix(projMatrix);
+    _planeMesh->render();
+    _deferredPipeline->endGeometryPass();
+
+    // this will be done once valid architecture shape will emerge
+    _deferredPipeline->startLightingPass();
+    _deferredPipeline->endLightingPass();
+
+    glViewport(0, 0, framebufferSize.x, framebufferSize.y);
     glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    _shaderProgram->use();
+    _textureBlitShader->use();
 
-    auto viewMtxLoc = _shaderProgram->getUniformLoc("viewMatrix");
-    _shaderProgram->setUniform(viewMtxLoc, _camera->getViewMatrix());
+    auto targetTextureLoc = _textureBlitShader->getUniformLoc("TargetTexture");
+    _textureBlitShader->setUniform(targetTextureLoc, 0);
 
-    auto projMtx = glm::perspective(
-        glm::radians(45.0f),
-        800.0f / 600.0f,
-        0.1f,
-        100.0f
-    );
+    auto colorBuffer = _deferredPipeline->getColorBuffer();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
 
-    auto projMtxLoc = _shaderProgram->getUniformLoc("projMatrix");
-    _shaderProgram->setUniform(projMtxLoc, projMtx);
+    renderQuad();
 
-    _planeMesh->render();
+    if (ImGui::BeginMainMenuBar())
+    {
+        ImGui::Text("Arealights (2017)");
+        ImGui::EndMainMenuBar();
+    }
 
     ImGuiApplication::onRender();
 
@@ -132,6 +172,39 @@ bool Application::onKey(int key, int scancode, int action, int mods)
     }
 
     return true;
+}
+
+void Application::renderQuad()
+{
+    if (_quadVAO == 0)
+    {
+        LOG(INFO) << "Generating renderable quad.";
+
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+
+        // setup plane VAO
+        glGenVertexArrays(1, &_quadVAO);
+        glGenBuffers(1, &_quadVBO);
+        glBindVertexArray(_quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, _quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(
+            1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))
+        );
+    }
+
+    glBindVertexArray(_quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
 }
 
 }

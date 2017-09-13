@@ -8,6 +8,7 @@
 #include "Shaders.hpp"
 #include "FreeCamera.hpp"
 #include "FreeCameraInputMapper.hpp"
+#include "DeferredRenderingPipeline.hpp"
 #include "inputs/GenericKeyboardInput.hpp"
 #include "inputs/GenericMouseInput.hpp"
 #include <memory>
@@ -35,6 +36,8 @@ protected:
 
 private:
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
+    std::unique_ptr<fw::ShaderProgram> _textureBlitShader;
+
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;
 
     std::shared_ptr<fw::FreeCamera> _camera;
@@ -42,6 +45,11 @@ private:
 
     std::shared_ptr<fw::GenericKeyboardInput> _keyboardInput;
     std::shared_ptr<fw::GenericMouseInput> _mouseInput;
+
+    std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
+
+    unsigned int _quadVBO, _quadVAO;
+    void renderQuad();
 };
 
 }
