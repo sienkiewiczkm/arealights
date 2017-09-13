@@ -34,8 +34,10 @@ void Shader::addSource(const string& source)
 
 void Shader::addSourceFromFile(const string &filename)
 {
-  string shaderCode = loadASCIITextFile(filename);
-  _sources.push_back(shaderCode);
+    LOG(DEBUG) << "Loading shader source from file: " << filename;
+    string shaderCode = loadASCIITextFile(filename);
+    _sources.push_back(shaderCode);
+    LOG(DEBUG) << "Shader loaded succesfully";
 }
 
 void Shader::compile(GLenum shaderType)

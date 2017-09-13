@@ -3,6 +3,11 @@
 
 #pragma once
 #include "ImGuiApplication.hpp"
+#include "Vertices.hpp"
+#include "Mesh.hpp"
+#include "Shaders.hpp"
+#include "FreeCamera.hpp"
+#include <memory>
 
 namespace arealights
 {
@@ -20,6 +25,12 @@ protected:
         const std::chrono::high_resolution_clock::duration& deltaTime
     ) override;
     virtual void onRender() override;
+
+private:
+    std::unique_ptr<fw::ShaderProgram> _shaderProgram;
+    std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;
+
+    fw::FreeCamera _camera;
 };
 
 }
