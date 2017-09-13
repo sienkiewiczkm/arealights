@@ -38,7 +38,15 @@ void Application::onCreate()
     _shaderProgram->attach(&fragmentShader);
     _shaderProgram->link();
 
-    _camera.setWorldPosition({0.0f, 1.0f, 5.0f});
+    _camera = std::make_shared<fw::FreeCamera>();
+    _camera->setWorldPosition({0.0f, 1.0f, 5.0f});
+
+    _keyboardInput = std::make_shared<fw::GenericKeyboardInput>();
+    _mouseInput = std::make_shared<fw::GenericMouseInput>();
+
+    _cameraInputMapper.setCamera(_camera);
+    _cameraInputMapper.setKeyboardInput(_keyboardInput);
+    _cameraInputMapper.setMouseInput(_mouseInput);
 }
 
 void Application::onDestroy()
@@ -51,6 +59,7 @@ void Application::onUpdate(
 )
 {
     ImGuiApplication::onUpdate(deltaTime);
+    _cameraInputMapper.update(deltaTime);
 }
 
 void Application::onRender()
@@ -61,7 +70,7 @@ void Application::onRender()
     _shaderProgram->use();
 
     auto viewMtxLoc = _shaderProgram->getUniformLoc("viewMatrix");
-    _shaderProgram->setUniform(viewMtxLoc, _camera.getViewMatrix());
+    _shaderProgram->setUniform(viewMtxLoc, _camera->getViewMatrix());
 
     auto projMtx = glm::perspective(
         glm::radians(45.0f),
@@ -78,6 +87,51 @@ void Application::onRender()
     ImGuiApplication::onRender();
 
     // buffers are swapped after onRender by default
+
+    _keyboardInput->nextFrame();
+    _mouseInput->nextFrame();
+}
+
+bool Application::onMouseButton(int button, int action, int mods)
+{
+    if (ImGuiApplication::onMouseButton(button, action, mods)) { return true; }
+
+    if (action == GLFW_PRESS)
+    {
+        _mouseInput->buttonDown(button);
+    }
+    else if (action == GLFW_RELEASE)
+    {
+        _mouseInput->buttonUp(button);
+    }
+
+    return true;
+}
+
+bool Application::onMouseMove(glm::dvec2 newPosition)
+{
+    if (ImGuiApplication::onMouseMove(newPosition)) { return true; }
+    _mouseInput->move(newPosition);
+    return true;
+}
+
+bool Application::onKey(int key, int scancode, int action, int mods)
+{
+    if (fw::ImGuiApplication::onKey(key, scancode, action, mods))
+    {
+        return true;
+    }
+
+    if (action == GLFW_PRESS)
+    {
+        _keyboardInput->keyDown(key);
+    }
+    else if (action == GLFW_RELEASE)
+    {
+        _keyboardInput->keyUp(key);
+    }
+
+    return true;
 }
 
 }

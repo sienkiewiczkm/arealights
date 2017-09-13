@@ -7,6 +7,9 @@
 #include "Mesh.hpp"
 #include "Shaders.hpp"
 #include "FreeCamera.hpp"
+#include "FreeCameraInputMapper.hpp"
+#include "inputs/GenericKeyboardInput.hpp"
+#include "inputs/GenericMouseInput.hpp"
 #include <memory>
 
 namespace arealights
@@ -26,11 +29,19 @@ protected:
     ) override;
     virtual void onRender() override;
 
+    virtual bool onKey(int key, int scancode, int action, int mods) override;
+    virtual bool onMouseMove(glm::dvec2 newPosition) override;
+    virtual bool onMouseButton(int button, int action, int mods) override;
+
 private:
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;
 
-    fw::FreeCamera _camera;
+    std::shared_ptr<fw::FreeCamera> _camera;
+    FreeCameraInputMapper _cameraInputMapper;
+
+    std::shared_ptr<fw::GenericKeyboardInput> _keyboardInput;
+    std::shared_ptr<fw::GenericMouseInput> _mouseInput;
 };
 
 }

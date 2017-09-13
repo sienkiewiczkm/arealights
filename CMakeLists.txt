@@ -44,6 +44,7 @@ set(AREALIGHTS_SOURCE_FILES
   source/Effect.cpp
   source/Framework.cpp
   source/FreeCamera.cpp
+  source/FreeCameraInputMapper.cpp
   source/ImGuiApplication.cpp
   source/ImGuiBinding.cpp
   source/ImGuiExtensions.cpp
