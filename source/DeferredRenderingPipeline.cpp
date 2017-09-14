@@ -108,6 +108,12 @@ void DeferredRenderingPipeline::setProjectionMatrix(glm::mat4 projectionMatrix)
     _geometryPassShader->setUniform(location, projectionMatrix);
 }
 
+void DeferredRenderingPipeline::setMaterialID(float materialID)
+{
+    auto location = _geometryPassShader->getUniformLoc("MaterialID");
+    _geometryPassShader->setUniform(location, materialID);
+}
+
 
 void DeferredRenderingPipeline::startLightingPass()
 {

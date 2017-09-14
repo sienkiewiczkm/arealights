@@ -23,6 +23,7 @@ public:
     void setModelMatrix(glm::mat4 modelMatrix);
     void setViewMatrix(glm::mat4 viewMatrix);
     void setProjectionMatrix(glm::mat4 projectionMatrix);
+    void setMaterialID(float materialID);
 
     virtual void startLightingPass();
     virtual void endLightingPass();

@@ -9,6 +9,7 @@
 #include "FreeCamera.hpp"
 #include "FreeCameraInputMapper.hpp"
 #include "DeferredRenderingPipeline.hpp"
+#include "ArealightConfigurationUI.hpp"
 #include "inputs/GenericKeyboardInput.hpp"
 #include "inputs/GenericMouseInput.hpp"
 #include <memory>
@@ -37,8 +38,10 @@ protected:
 private:
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::ShaderProgram> _textureBlitShader;
+    std::unique_ptr<fw::ShaderProgram> _ltcShader;
 
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;
+    std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _arealightMesh;
 
     std::shared_ptr<fw::FreeCamera> _camera;
     FreeCameraInputMapper _cameraInputMapper;
@@ -48,8 +51,13 @@ private:
 
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
+    ArealightConfigurationUI _configurationUI;
+
     unsigned int _quadVBO, _quadVAO;
     void renderQuad();
+
+    unsigned int _ltcMat, _ltcMag;
+    void loadLookupTextures();
 };
 
 }

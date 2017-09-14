@@ -17,10 +17,12 @@ out vec2 fsTexCoord;
 
 void main()
 {
-    vec4 viewPosition = viewMatrix * vec4(inPosition.xyz, 1.0);
+    vec4 viewPosition = viewMatrix * modelMatrix * vec4(inPosition.xyz, 1.0);
     gl_Position = projectionMatrix * viewPosition;
 
+    mat3 normalMatrix = mat3(viewMatrix) * transpose(inverse(mat3(modelMatrix)));
+
     fsPosition = viewPosition.xyz;
-    fsNormal = inNormal; // todo: invalid, fix
+    fsNormal = normalize(normalMatrix * inNormal);
     fsTexCoord = inTexCoord;
 }
