@@ -78,9 +78,10 @@ void DeferredRenderingPipeline::create(glm::ivec2 resolution)
 
 void DeferredRenderingPipeline::startGeometryPass()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, _gBuffer);
+    glViewport(0, 0, _resolution.x, _resolution.y);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, _gBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _geometryPassShader->use();
 }
