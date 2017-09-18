@@ -19,11 +19,13 @@ public:
     glm::vec2 getSize() const { return _size; }
     float getRotationX() const { return _rotationX; }
     float getRotationY() const { return _rotationY; }
+    int getArealightMethod() const { return _selectedArealightMethod; }
 
 private:
     float _rotationX, _rotationY;
     glm::vec3 _position;
     glm::vec2 _size;
+    int _selectedArealightMethod;
 };
 
 }

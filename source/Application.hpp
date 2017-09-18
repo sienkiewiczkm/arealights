@@ -35,10 +35,14 @@ protected:
     virtual bool onMouseMove(glm::dvec2 newPosition) override;
     virtual bool onMouseButton(int button, int action, int mods) override;
 
+    void renderClusters();
+    void renderLightsLTC(glm::mat4 viewMatrix, glm::mat4 lightWorldMatrix);
+
 private:
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::ShaderProgram> _textureBlitShader;
     std::unique_ptr<fw::ShaderProgram> _ltcShader;
+    std::unique_ptr<fw::ShaderProgram> _clusteringShader;
 
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _arealightMesh;
@@ -58,6 +62,11 @@ private:
 
     unsigned int _ltcMat, _ltcMag;
     void loadLookupTextures();
+
+    std::unique_ptr<fw::ShaderProgram> makeSimpleShader(
+        const std::string& vertexShaderPath,
+        const std::string& fragmentShaderPath
+    );
 };
 
 }

@@ -12,7 +12,8 @@ ArealightConfigurationUI::ArealightConfigurationUI():
     _rotationX{},
     _rotationY{},
     _position{0.0f, 1.0f, 0.0f},
-    _size{1.0f, 1.0f}
+    _size{1.0f, 1.0f},
+    _selectedArealightMethod{1}
 {
 }
 
@@ -24,7 +25,14 @@ void ArealightConfigurationUI::update()
 {
     if (ImGui::Begin("Arealight"))
     {
-        const char* arealightTypes = { "Quad" };
+        const char* arealightMethods[] = {
+            "None",
+            "Linearly Transformed Cosines"
+        };
+
+        ImGui::Combo("Method", &_selectedArealightMethod, arealightMethods, 2);
+
+        const char* arealightTypes[] = { "Quad" };
         int selectedItem = 0;
         ImGui::Combo("Shape", &selectedItem, arealightTypes, 1);
         ImGui::DragFloat3("Position", glm::value_ptr(_position), 0.1f);

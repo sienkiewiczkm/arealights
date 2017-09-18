@@ -34,50 +34,10 @@ void Application::onCreate()
         arealightMesh.vertices, arealightMesh.indices
     );
 
-    {
-        fw::Shader vertexShader;
-        vertexShader.addSourceFromFile("../assets/DebugShader.vs");
-        vertexShader.compile(GL_VERTEX_SHADER);
-
-        fw::Shader fragmentShader;
-        fragmentShader.addSourceFromFile("../assets/DebugShader.fs");
-        fragmentShader.compile(GL_FRAGMENT_SHADER);
-
-        _shaderProgram = std::make_unique<fw::ShaderProgram>();
-        _shaderProgram->attach(&vertexShader);
-        _shaderProgram->attach(&fragmentShader);
-        _shaderProgram->link();
-    }
-
-    {
-        fw::Shader vertexShader, fragmentShader;
-
-        vertexShader.addSourceFromFile("../assets/TextureBlit.vs");
-        vertexShader.compile(GL_VERTEX_SHADER);
-
-        fragmentShader.addSourceFromFile("../assets/TextureBlit.fs");
-        fragmentShader.compile(GL_FRAGMENT_SHADER);
-
-        _textureBlitShader = std::make_unique<fw::ShaderProgram>();
-        _textureBlitShader->attach(&vertexShader);
-        _textureBlitShader->attach(&fragmentShader);
-        _textureBlitShader->link();
-    }
-
-    {
-        fw::Shader vertexShader, fragmentShader;
-
-        vertexShader.addSourceFromFile("../assets/LTC.vs");
-        vertexShader.compile(GL_VERTEX_SHADER);
-
-        fragmentShader.addSourceFromFile("../assets/LTC.fs");
-        fragmentShader.compile(GL_FRAGMENT_SHADER);
-
-        _ltcShader = std::make_unique<fw::ShaderProgram>();
-        _ltcShader->attach(&vertexShader);
-        _ltcShader->attach(&fragmentShader);
-        _ltcShader->link();
-    }
+    _shaderProgram = makeSimpleShader("../assets/DebugShader.vs", "../assets/DebugShader.fs");
+    _textureBlitShader = makeSimpleShader("../assets/TextureBlit.vs", "../assets/TextureBlit.fs");
+    _ltcShader = makeSimpleShader("../assets/LTC.vs", "../assets/LTC.fs");
+    _clusteringShader = makeSimpleShader("../assets/Clustering.vs", "../assets/Clustering.fs");
 
     _camera = std::make_shared<fw::FreeCamera>();
     _camera->setWorldPosition({0.0f, 1.0f, 5.0f});
@@ -153,32 +113,11 @@ void Application::onRender()
     _deferredPipeline->startLightingPass();
     _deferredPipeline->endLightingPass();
 
+    auto mode = _configurationUI.getArealightMethod();
+
     glViewport(0, 0, framebufferSize.x, framebufferSize.y);
     glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    _ltcShader->use();
-
-    auto targetTextureLoc = _ltcShader->getUniformLoc("TargetTexture");
-    _ltcShader->setUniform(targetTextureLoc, 0);
-
-    auto normalTextureLoc = _ltcShader->getUniformLoc("NormalTexture");
-    _ltcShader->setUniform(normalTextureLoc, 1);
-
-    auto positionTextureLoc = _ltcShader->getUniformLoc("PositionTexture");
-    _ltcShader->setUniform(positionTextureLoc, 2);
-
-    auto ltcMatLoc = _ltcShader->getUniformLoc("ltc_mat");
-    _ltcShader->setUniform(ltcMatLoc, 3);
-
-    auto ltcMagLoc = _ltcShader->getUniformLoc("ltc_mag");
-    _ltcShader->setUniform(ltcMagLoc, 4);
-
-    auto viewMatrixLoc = _ltcShader->getUniformLoc("viewMatrix");
-    _ltcShader->setUniform(viewMatrixLoc, viewMatrix);
-
-    auto arealightMatLoc = _ltcShader->getUniformLoc("arealightTransform");
-    _ltcShader->setUniform(arealightMatLoc, lightWorldMatrix);
 
     auto positionBuffer = _deferredPipeline->getPositionBuffer();
     auto normalBuffer = _deferredPipeline->getNormalBuffer();
@@ -193,13 +132,14 @@ void Application::onRender()
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, positionBuffer);
 
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
-
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, _ltcMag);
-
-    renderQuad();
+    if (mode == 0)
+    {
+        renderClusters();
+    }
+    else if (mode == 1)
+    {
+        renderLightsLTC(viewMatrix, lightWorldMatrix);
+    }
 
     if (ImGui::BeginMainMenuBar())
     {
@@ -255,6 +195,56 @@ bool Application::onKey(int key, int scancode, int action, int mods)
     }
 
     return true;
+}
+
+void Application::renderClusters()
+{
+    _clusteringShader->use();
+
+    auto targetTextureLoc = _clusteringShader->getUniformLoc("TargetTexture");
+    _clusteringShader->setUniform(targetTextureLoc, 0);
+
+    auto normalTextureLoc = _clusteringShader->getUniformLoc("NormalTexture");
+    _clusteringShader->setUniform(normalTextureLoc, 1);
+
+    auto positionTextureLoc = _clusteringShader->getUniformLoc("PositionTexture");
+    _clusteringShader->setUniform(positionTextureLoc, 2);
+
+    renderQuad();
+}
+
+void Application::renderLightsLTC(glm::mat4 viewMatrix, glm::mat4 lightWorldMatrix)
+{
+    _ltcShader->use();
+
+    auto targetTextureLoc = _ltcShader->getUniformLoc("TargetTexture");
+    _ltcShader->setUniform(targetTextureLoc, 0);
+
+    auto normalTextureLoc = _ltcShader->getUniformLoc("NormalTexture");
+    _ltcShader->setUniform(normalTextureLoc, 1);
+
+    auto positionTextureLoc = _ltcShader->getUniformLoc("PositionTexture");
+    _ltcShader->setUniform(positionTextureLoc, 2);
+
+    auto ltcMatLoc = _ltcShader->getUniformLoc("ltc_mat");
+    _ltcShader->setUniform(ltcMatLoc, 3);
+
+    auto ltcMagLoc = _ltcShader->getUniformLoc("ltc_mag");
+    _ltcShader->setUniform(ltcMagLoc, 4);
+
+    auto viewMatrixLoc = _ltcShader->getUniformLoc("viewMatrix");
+    _ltcShader->setUniform(viewMatrixLoc, viewMatrix);
+
+    auto arealightMatLoc = _ltcShader->getUniformLoc("arealightTransform");
+    _ltcShader->setUniform(arealightMatLoc, lightWorldMatrix);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, _ltcMat);
+
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, _ltcMag);
+
+    renderQuad();
 }
 
 void Application::renderQuad()
@@ -362,5 +352,25 @@ void Application::loadLookupTextures()
         ltclookup::tabAmplitude
     );
 }
+
+std::unique_ptr<fw::ShaderProgram> Application::makeSimpleShader(
+    const std::string& vertexShaderPath,
+    const std::string& fragmentShaderPath
+)
+{
+    fw::Shader vertexShader, fragmentShader;
+    auto shaderProgram = std::make_unique<fw::ShaderProgram>();
+
+    vertexShader.addSourceFromFile(vertexShaderPath);
+    vertexShader.compile(GL_VERTEX_SHADER);
+    shaderProgram->attach(&vertexShader);
+
+    fragmentShader.addSourceFromFile(fragmentShaderPath);
+    fragmentShader.compile(GL_FRAGMENT_SHADER);
+    shaderProgram->attach(&fragmentShader);
+
+    shaderProgram->link();
+    return shaderProgram;
+};
 
 }
