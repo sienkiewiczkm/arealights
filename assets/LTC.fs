@@ -190,7 +190,7 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
 
 const float pi = 3.14159265;
 
-vec3 shadeSurface(vec3 position, vec3 normal)
+vec3 shadeSurface(vec3 position, vec3 normal, vec4 albedo)
 {
   vec3 points[4];
   float hw = 0.5*1.0;
@@ -202,7 +202,7 @@ vec3 shadeSurface(vec3 position, vec3 normal)
 
   vec3 viewDir = normalize(-position);
 
-  float roughness = 0.25;
+  float roughness = 0.15 + 0.45 * albedo.r;
   float theta = acos(dot(normal, viewDir));
   vec2 uv = vec2(roughness, theta/(0.5*pi));
   uv = uv * LUT_SCALE + LUT_BIAS;
@@ -242,7 +242,7 @@ void main()
 
     if (color.a < 0.15)
     {
-        FragColor = vec4(shadeSurface(position, normal), 1.0);
+        FragColor = vec4(shadeSurface(position, normal, color), 1.0);
     }
     else
     {
