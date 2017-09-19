@@ -46,11 +46,22 @@ public:
     GLint getUniformLoc(const std::string& uniformName) const;
 
     void setUniform(GLuint location, GLint v0);
+    void setUniform(const std::string& uniformName, GLint v0);
+
     void setUniform(GLuint location, GLfloat v0);
+    void setUniform(const std::string& uniformName, GLfloat v0);
+
     void setUniform(GLuint location, const glm::vec2& uniform);
+    void setUniform(const std::string& uniformName, const glm::vec2& uniform);
+
     void setUniform(GLuint location, const glm::vec3& uniform);
+    void setUniform(const std::string& uniformName, const glm::vec3& uniform);
+
     void setUniform(GLuint location, const glm::vec4& uniform);
+    void setUniform(const std::string& uniformName, const glm::vec4& uniform);
+
     void setUniform(GLuint location, const glm::mat4& uniform);
+    void setUniform(const std::string& uniformName, const glm::mat4& uniform);
 
     GLuint getId() { return _program; }
 

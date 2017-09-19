@@ -201,14 +201,9 @@ void Application::renderClusters()
 {
     _clusteringShader->use();
 
-    auto targetTextureLoc = _clusteringShader->getUniformLoc("TargetTexture");
-    _clusteringShader->setUniform(targetTextureLoc, 0);
-
-    auto normalTextureLoc = _clusteringShader->getUniformLoc("NormalTexture");
-    _clusteringShader->setUniform(normalTextureLoc, 1);
-
-    auto positionTextureLoc = _clusteringShader->getUniformLoc("PositionTexture");
-    _clusteringShader->setUniform(positionTextureLoc, 2);
+    _clusteringShader->setUniform("TargetTexture", 0);
+    _clusteringShader->setUniform("NormalTexture", 1);
+    _clusteringShader->setUniform("PositionTexture", 2);
 
     renderQuad();
 }
@@ -217,26 +212,14 @@ void Application::renderLightsLTC(glm::mat4 viewMatrix, glm::mat4 lightWorldMatr
 {
     _ltcShader->use();
 
-    auto targetTextureLoc = _ltcShader->getUniformLoc("TargetTexture");
-    _ltcShader->setUniform(targetTextureLoc, 0);
+    _ltcShader->setUniform("TargetTexture", 0);
+    _ltcShader->setUniform("NormalTexture", 1);
+    _ltcShader->setUniform("PositionTexture", 2);
+    _ltcShader->setUniform("ltc_mat", 3);
+    _ltcShader->setUniform("ltc_mag", 4);
 
-    auto normalTextureLoc = _ltcShader->getUniformLoc("NormalTexture");
-    _ltcShader->setUniform(normalTextureLoc, 1);
-
-    auto positionTextureLoc = _ltcShader->getUniformLoc("PositionTexture");
-    _ltcShader->setUniform(positionTextureLoc, 2);
-
-    auto ltcMatLoc = _ltcShader->getUniformLoc("ltc_mat");
-    _ltcShader->setUniform(ltcMatLoc, 3);
-
-    auto ltcMagLoc = _ltcShader->getUniformLoc("ltc_mag");
-    _ltcShader->setUniform(ltcMagLoc, 4);
-
-    auto viewMatrixLoc = _ltcShader->getUniformLoc("viewMatrix");
-    _ltcShader->setUniform(viewMatrixLoc, viewMatrix);
-
-    auto arealightMatLoc = _ltcShader->getUniformLoc("arealightTransform");
-    _ltcShader->setUniform(arealightMatLoc, lightWorldMatrix);
+    _ltcShader->setUniform("viewMatrix", viewMatrix);
+    _ltcShader->setUniform("arealightTransform", lightWorldMatrix);
 
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, _ltcMat);
