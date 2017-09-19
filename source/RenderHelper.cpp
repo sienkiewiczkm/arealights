@@ -21,6 +21,27 @@ RenderHelper::~RenderHelper()
     _quadVAO = _quadVBO = 0;
 }
 
+std::unique_ptr<fw::ShaderProgram> RenderHelper::makeSimpleShader(
+    const std::string& vertexShaderPath,
+    const std::string& fragmentShaderPath
+)
+{
+    fw::Shader vertexShader, fragmentShader;
+    auto shaderProgram = std::make_unique<fw::ShaderProgram>();
+
+    vertexShader.addSourceFromFile(vertexShaderPath);
+    vertexShader.compile(GL_VERTEX_SHADER);
+    shaderProgram->attach(&vertexShader);
+
+    fragmentShader.addSourceFromFile(fragmentShaderPath);
+    fragmentShader.compile(GL_FRAGMENT_SHADER);
+    shaderProgram->attach(&fragmentShader);
+
+    shaderProgram->link();
+    return shaderProgram;
+};
+
+
 void RenderHelper::drawFullScreenQuad()
 {
     if (_quadVAO == 0)
@@ -50,6 +71,11 @@ void RenderHelper::drawFullScreenQuad()
     glBindVertexArray(_quadVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
+}
+
+glm::ivec2 RenderHelper::getFramebufferSize() const
+{
+    return _glApplication->getFramebufferSize();
 }
 
 }

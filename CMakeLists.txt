@@ -50,6 +50,7 @@ set(AREALIGHTS_SOURCE_FILES
   source/ImGuiApplication.cpp
   source/ImGuiBinding.cpp
   source/ImGuiExtensions.cpp
+  source/LinearlyTransformedCosines.cpp
   source/Main.cpp
   source/OpenGLApplication.cpp
   source/OrbitingCamera.cpp

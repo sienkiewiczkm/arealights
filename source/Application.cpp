@@ -5,13 +5,11 @@
 #include "BasicMeshes.cpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
-#include "ltc.inc"
 
 namespace arealights
 {
 
-Application::Application():
-    _renderHelper(this)
+Application::Application()
 {
 }
 
@@ -23,6 +21,11 @@ void Application::onCreate()
 {
     ImGuiApplication::onCreate();
 
+    _renderHelper = std::make_shared<RenderHelper>(this);
+
+    _ltc = std::make_shared<LinearlyTransformedCosines>(_renderHelper);
+    _ltc->init();
+
     auto planeMesh = fw::PlaneGenerator::generate({10.0f, 10.0f});
     _planeMesh = std::make_unique<fw::Mesh<fw::StandardVertex3D>>(
         planeMesh.vertices, planeMesh.indices
@@ -33,10 +36,20 @@ void Application::onCreate()
         arealightMesh.vertices, arealightMesh.indices
     );
 
-    _shaderProgram = makeSimpleShader("../assets/DebugShader.vs", "../assets/DebugShader.fs");
-    _textureBlitShader = makeSimpleShader("../assets/TextureBlit.vs", "../assets/TextureBlit.fs");
-    _ltcShader = makeSimpleShader("../assets/LTC.vs", "../assets/LTC.fs");
-    _clusteringShader = makeSimpleShader("../assets/Clustering.vs", "../assets/Clustering.fs");
+    _shaderProgram = _renderHelper->makeSimpleShader(
+        "../assets/DebugShader.vs",
+        "../assets/DebugShader.fs"
+    );
+
+    _textureBlitShader = _renderHelper->makeSimpleShader(
+        "../assets/TextureBlit.vs",
+        "../assets/TextureBlit.fs"
+    );
+
+    _clusteringShader = _renderHelper->makeSimpleShader(
+        "../assets/Clustering.vs",
+        "../assets/Clustering.fs"
+    );
 
     _camera = std::make_shared<fw::FreeCamera>();
     _camera->setWorldPosition({0.0f, 1.0f, 5.0f});
@@ -50,8 +63,6 @@ void Application::onCreate()
 
     _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
     _deferredPipeline->create({1600, 1200});
-
-    loadLookupTextures();
 }
 
 void Application::onDestroy()
@@ -137,7 +148,9 @@ void Application::onRender()
     }
     else if (mode == 1)
     {
-        renderLightsLTC(viewMatrix, lightWorldMatrix);
+        _ltc->setCamera(viewMatrix);
+        _ltc->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
+        _ltc->render();
     }
 
     if (ImGui::BeginMainMenuBar())
@@ -204,122 +217,7 @@ void Application::renderClusters()
     _clusteringShader->setUniform("NormalTexture", 1);
     _clusteringShader->setUniform("PositionTexture", 2);
 
-    _renderHelper.drawFullScreenQuad();
+    _renderHelper->drawFullScreenQuad();
 }
-
-void Application::renderLightsLTC(glm::mat4 viewMatrix, glm::mat4 lightWorldMatrix)
-{
-    _ltcShader->use();
-
-    _ltcShader->setUniform("TargetTexture", 0);
-    _ltcShader->setUniform("NormalTexture", 1);
-    _ltcShader->setUniform("PositionTexture", 2);
-    _ltcShader->setUniform("ltc_mat", 3);
-    _ltcShader->setUniform("ltc_mag", 4);
-
-    _ltcShader->setUniform("viewMatrix", viewMatrix);
-    _ltcShader->setUniform("arealightTransform", lightWorldMatrix);
-
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
-
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, _ltcMag);
-
-    _renderHelper.drawFullScreenQuad();
-}
-
-void Application::loadLookupTextures()
-{
-    glGenTextures(1, &_ltcMat);
-    glGenTextures(1, &_ltcMag);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
-
-    std::vector<float> textureData;
-    textureData.resize(4 * ltclookup::size * ltclookup::size);
-
-    for (auto i = 0; i < ltclookup::size; ++i)
-    {
-        for (auto j = 0; j < ltclookup::size; ++j)
-        {
-            auto matIdx = ltclookup::size * j + i;
-            auto base = 4 * matIdx;
-            const auto& mat = ltclookup::tabM[matIdx];
-
-            const auto& a = mat[0][0];
-            const auto& b = mat[0][2];
-            const auto& c = mat[1][1];
-            const auto& d = mat[2][0];
-
-            textureData[base+0] = a;
-            textureData[base+1] = -b;
-            textureData[base+2] = (a-b*d)/c;
-            textureData[base+3] = -d;
-        }
-    }
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        ltclookup::size,
-        ltclookup::size,
-        0,
-        GL_RGBA,
-        GL_FLOAT,
-        textureData.data()
-    );
-
-    GLenum err;
-    while((err = glGetError()) != GL_NO_ERROR)
-    {
-        std::cerr << "ERROR: " << err << std::endl;
-    }
-
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_R,
-        ltclookup::size,
-        ltclookup::size,
-        0,
-        GL_R,
-        GL_FLOAT,
-        ltclookup::tabAmplitude
-    );
-}
-
-std::unique_ptr<fw::ShaderProgram> Application::makeSimpleShader(
-    const std::string& vertexShaderPath,
-    const std::string& fragmentShaderPath
-)
-{
-    fw::Shader vertexShader, fragmentShader;
-    auto shaderProgram = std::make_unique<fw::ShaderProgram>();
-
-    vertexShader.addSourceFromFile(vertexShaderPath);
-    vertexShader.compile(GL_VERTEX_SHADER);
-    shaderProgram->attach(&vertexShader);
-
-    fragmentShader.addSourceFromFile(fragmentShaderPath);
-    fragmentShader.compile(GL_FRAGMENT_SHADER);
-    shaderProgram->attach(&fragmentShader);
-
-    shaderProgram->link();
-    return shaderProgram;
-};
 
 }

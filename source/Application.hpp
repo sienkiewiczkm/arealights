@@ -13,6 +13,7 @@
 #include "inputs/GenericKeyboardInput.hpp"
 #include "inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
+#include "LinearlyTransformedCosines.hpp"
 #include <memory>
 
 namespace arealights
@@ -37,14 +38,12 @@ protected:
     virtual bool onMouseButton(int button, int action, int mods) override;
 
     void renderClusters();
-    void renderLightsLTC(glm::mat4 viewMatrix, glm::mat4 lightWorldMatrix);
 
 private:
-    RenderHelper _renderHelper;
+    std::shared_ptr<RenderHelper> _renderHelper;
 
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::ShaderProgram> _textureBlitShader;
-    std::unique_ptr<fw::ShaderProgram> _ltcShader;
     std::unique_ptr<fw::ShaderProgram> _clusteringShader;
 
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;
@@ -59,14 +58,7 @@ private:
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
     ArealightConfigurationUI _configurationUI;
-
-    unsigned int _ltcMat, _ltcMag;
-    void loadLookupTextures();
-
-    std::unique_ptr<fw::ShaderProgram> makeSimpleShader(
-        const std::string& vertexShaderPath,
-        const std::string& fragmentShaderPath
-    );
+    std::shared_ptr<LinearlyTransformedCosines> _ltc;
 };
 
 }
