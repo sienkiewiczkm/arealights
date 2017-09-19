@@ -53,6 +53,7 @@ set(AREALIGHTS_SOURCE_FILES
   source/Main.cpp
   source/OpenGLApplication.cpp
   source/OrbitingCamera.cpp
+  source/RenderHelper.cpp
   source/Shaders.cpp
   source/StbImplementation.c
   source/Texture.cpp

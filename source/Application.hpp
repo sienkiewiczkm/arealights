@@ -12,6 +12,7 @@
 #include "ArealightConfigurationUI.hpp"
 #include "inputs/GenericKeyboardInput.hpp"
 #include "inputs/GenericMouseInput.hpp"
+#include "RenderHelper.hpp"
 #include <memory>
 
 namespace arealights
@@ -39,6 +40,8 @@ protected:
     void renderLightsLTC(glm::mat4 viewMatrix, glm::mat4 lightWorldMatrix);
 
 private:
+    RenderHelper _renderHelper;
+
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::ShaderProgram> _textureBlitShader;
     std::unique_ptr<fw::ShaderProgram> _ltcShader;
@@ -56,9 +59,6 @@ private:
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
     ArealightConfigurationUI _configurationUI;
-
-    unsigned int _quadVBO, _quadVAO;
-    void renderQuad();
 
     unsigned int _ltcMat, _ltcMag;
     void loadLookupTextures();
