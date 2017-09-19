@@ -63,6 +63,10 @@ void Application::onCreate()
 
     _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
     _deferredPipeline->create({1600, 1200});
+
+    GLint maxTextureUnits;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
+    LOG(INFO) << "Max texture units: " << maxTextureUnits;
 }
 
 void Application::onDestroy()

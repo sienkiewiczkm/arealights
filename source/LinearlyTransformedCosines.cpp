@@ -119,7 +119,7 @@ void LinearlyTransformedCosines::loadLookupTextures()
         LOG(ERROR) << err;
     }
 
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
+    glBindTexture(GL_TEXTURE_2D, _ltcMag);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -128,11 +128,11 @@ void LinearlyTransformedCosines::loadLookupTextures()
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        GL_R,
+        GL_RED,
         ltclookup::size,
         ltclookup::size,
         0,
-        GL_R,
+        GL_RED,
         GL_FLOAT,
         ltclookup::tabAmplitude
     );
