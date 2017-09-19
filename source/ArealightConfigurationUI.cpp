@@ -26,11 +26,12 @@ void ArealightConfigurationUI::update()
     if (ImGui::Begin("Arealight"))
     {
         const char* arealightMethods[] = {
-            "None",
-            "Linearly Transformed Cosines"
+            "Debug view",
+            "Linearly Transformed Cosines",
+            "Point light cluster"
         };
 
-        ImGui::Combo("Method", &_selectedArealightMethod, arealightMethods, 2);
+        ImGui::Combo("Method", &_selectedArealightMethod, arealightMethods, 3);
 
         const char* arealightTypes[] = { "Quad" };
         int selectedItem = 0;

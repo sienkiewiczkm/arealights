@@ -23,6 +23,9 @@ void Application::onCreate()
 
     _renderHelper = std::make_shared<RenderHelper>(this);
 
+    _pointLightCluster = std::make_shared<PointLightCluster>(_renderHelper);
+    _pointLightCluster->init();
+
     _ltc = std::make_shared<LinearlyTransformedCosines>(_renderHelper);
     _ltc->init();
 
@@ -155,6 +158,12 @@ void Application::onRender()
         _ltc->setCamera(viewMatrix);
         _ltc->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _ltc->render();
+    }
+    else if (mode == 2)
+    {
+        _pointLightCluster->setCamera(viewMatrix);
+        _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
+        _pointLightCluster->render();
     }
 
     if (ImGui::BeginMainMenuBar())

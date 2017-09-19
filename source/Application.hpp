@@ -14,6 +14,7 @@
 #include "inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
 #include "LinearlyTransformedCosines.hpp"
+#include "PointLightCluster.hpp"
 #include <memory>
 
 namespace arealights
@@ -58,6 +59,8 @@ private:
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
     ArealightConfigurationUI _configurationUI;
+
+    std::shared_ptr<PointLightCluster> _pointLightCluster;
     std::shared_ptr<LinearlyTransformedCosines> _ltc;
 };
 
