@@ -28,6 +28,9 @@ public:
     virtual void startLightingPass();
     virtual void endLightingPass();
 
+    unsigned int getFramebuffer() { return _gBuffer; }
+    glm::ivec2 getFramebufferSize() { return _resolution; }
+
     unsigned int getPositionBuffer() { return _gPosition; }
     unsigned int getNormalBuffer() { return _gNormal; }
     unsigned int getColorBuffer() { return _gColor; }

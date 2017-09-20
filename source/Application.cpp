@@ -65,7 +65,7 @@ void Application::onCreate()
     _cameraInputMapper.setMouseInput(_mouseInput);
 
     _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
-    _deferredPipeline->create({1600, 1200});
+    _deferredPipeline->create({800, 600});
 
     GLint maxTextureUnits;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
@@ -140,6 +140,17 @@ void Application::onRender()
     auto normalBuffer = _deferredPipeline->getNormalBuffer();
     auto colorBuffer = _deferredPipeline->getColorBuffer();
 
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, _deferredPipeline->getFramebuffer());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    auto gbufferResolution = _deferredPipeline->getFramebufferSize();
+    glBlitFramebuffer(
+        0, 0, gbufferResolution.x, gbufferResolution.y,
+        0, 0, framebufferSize.x, framebufferSize.y,
+        GL_DEPTH_BUFFER_BIT,
+        GL_NEAREST
+    );
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
 
@@ -161,7 +172,7 @@ void Application::onRender()
     }
     else if (mode == 2)
     {
-        _pointLightCluster->setCamera(viewMatrix);
+        _pointLightCluster->setCamera(viewMatrix, projMatrix);
         _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _pointLightCluster->render();
     }

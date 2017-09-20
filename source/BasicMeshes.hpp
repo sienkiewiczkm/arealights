@@ -25,4 +25,16 @@ public:
     static MeshInfo generate(glm::vec2 size);
 };
 
+class SphereGenerator
+{
+public:
+    SphereGenerator() {}
+    virtual ~SphereGenerator() {}
+    static MeshInfo generate(
+        float radius,
+        int latitudeSubdivisions,
+        int longtitudeSubdivisions
+    );
+};
+
 }

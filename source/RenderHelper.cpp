@@ -3,6 +3,7 @@
 
 #include "RenderHelper.hpp"
 #include "OpenGL.hpp"
+#include "BasicMeshes.hpp"
 
 namespace arealights
 {
@@ -12,6 +13,10 @@ RenderHelper::RenderHelper(fw::OpenGLApplication* glApplication):
     _quadVAO{0},
     _quadVBO{0}
 {
+    auto sphereMesh = fw::SphereGenerator::generate(1.0f, 32, 32);
+    _sphereMesh = std::make_unique<fw::Mesh<fw::StandardVertex3D>>(
+        sphereMesh.vertices, sphereMesh.indices
+    );
 }
 
 RenderHelper::~RenderHelper()
@@ -41,6 +46,10 @@ std::unique_ptr<fw::ShaderProgram> RenderHelper::makeSimpleShader(
     return shaderProgram;
 };
 
+void RenderHelper::drawUnitSphere()
+{
+    _sphereMesh->render();
+}
 
 void RenderHelper::drawFullScreenQuad()
 {

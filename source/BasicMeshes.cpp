@@ -2,6 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "BasicMeshes.hpp"
+#include "Common.hpp"
 
 namespace fw
 {
@@ -44,6 +45,74 @@ MeshInfo PlaneGenerator::generate(glm::vec2 size)
     std::vector<GLuint> indices = { 0, 1, 2, 1, 2, 3 };
 
     return MeshInfo{vertices, indices};
+}
+
+MeshInfo SphereGenerator::generate(
+    float radius,
+    int latitudeSubdivisions,
+    int longtitudeSubdivisions
+)
+{
+    std::vector<StandardVertex3D> vertices;
+    std::vector<GLuint> indices;
+
+    for (int latitude = 0;
+         latitude < latitudeSubdivisions;
+         ++latitude)
+    {
+        for (int longtitude = 0;
+             longtitude < longtitudeSubdivisions;
+             ++longtitude)
+        {
+            float theta = 2.0f * pif() *
+                latitude / static_cast<float>(latitudeSubdivisions);
+            float phi = pif() *
+                longtitude / (static_cast<float>(longtitudeSubdivisions) - 1);
+
+            float costheta = cosf(theta);
+            float sintheta = sinf(theta);
+            float cosphi = cosf(phi);
+            float sinphi = sinf(phi);
+
+            glm::vec3 position = glm::vec3(
+                radius * costheta * sinphi,
+                radius * sintheta * sinphi,
+                radius * cosphi
+            );
+
+            vertices.push_back(StandardVertex3D(
+                position,
+                {},
+                glm::normalize(position),
+                {}
+            ));
+        }
+    }
+
+
+    for (int latitude = 0;
+         latitude < latitudeSubdivisions;
+         ++latitude)
+    {
+        for (int longtitude = 0;
+             longtitude < longtitudeSubdivisions - 1;
+             ++longtitude)
+        {
+            int baseIndex = latitude * longtitudeSubdivisions + longtitude;
+            int neighbourIndex = ((latitude + 1) % latitudeSubdivisions)
+                * longtitudeSubdivisions + longtitude;
+
+            indices.push_back(baseIndex);
+            indices.push_back(baseIndex+1);
+            indices.push_back(neighbourIndex);
+
+            indices.push_back(neighbourIndex);
+            indices.push_back(baseIndex+1);
+            indices.push_back(neighbourIndex+1);
+        }
+    }
+
+    return MeshInfo(vertices, indices);
 }
 
 }

@@ -16,7 +16,7 @@ public:
     PointLightCluster(std::shared_ptr<RenderHelper> renderHelper);
     ~PointLightCluster();
 
-    void setCamera(const glm::mat4& viewMatrix);
+    void setCamera(const glm::mat4& viewMatrix, const glm::mat4& projMatrix);
     void setLights(std::vector<PolygonalLight> lights);
 
     void init();
@@ -25,8 +25,9 @@ public:
 private:
     std::shared_ptr<RenderHelper> _renderHelper;
     std::unique_ptr<fw::ShaderProgram> _shader;
+    std::unique_ptr<fw::ShaderProgram> _sphereLightVolumeShader;
     std::vector<PolygonalLight> _lights;
-    glm::mat4 _viewMatrix;
+    glm::mat4 _viewMatrix, _projMatrix;
 };
 
 }

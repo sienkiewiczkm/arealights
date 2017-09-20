@@ -4,6 +4,8 @@
 #pragma once
 #include "OpenGLApplication.hpp"
 #include "Shaders.hpp"
+#include "Mesh.hpp"
+#include "Vertices.hpp"
 
 namespace arealights
 {
@@ -19,12 +21,16 @@ public:
         const std::string& fragmentShaderPath
     );
 
+    void drawUnitSphere();
     void drawFullScreenQuad();
+
     glm::ivec2 getFramebufferSize() const;
 
 private:
     fw::OpenGLApplication *_glApplication;
     unsigned int _quadVAO, _quadVBO;
+
+    std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _sphereMesh;
 };
 
 }
