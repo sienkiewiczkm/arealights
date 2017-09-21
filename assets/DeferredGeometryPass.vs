@@ -13,6 +13,7 @@ uniform mat4 projectionMatrix;
 
 out vec3 fsPosition;
 out vec3 fsNormal;
+out vec3 fsTangent;
 out vec2 fsTexCoord;
 
 void main()
@@ -24,5 +25,6 @@ void main()
 
     fsPosition = viewPosition.xyz;
     fsNormal = normalize(normalMatrix * inNormal);
+		fsTangent = normalize(normalMatrix * inTangent);
     fsTexCoord = inTexCoord;
 }

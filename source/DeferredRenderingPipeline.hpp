@@ -35,6 +35,11 @@ public:
     unsigned int getNormalBuffer() { return _gNormal; }
     unsigned int getColorBuffer() { return _gColor; }
 
+    std::shared_ptr<fw::ShaderProgram> getShader()
+    {
+        return _geometryPassShader;
+    }
+
 private:
     glm::ivec2 _resolution;
     unsigned int _gBuffer;

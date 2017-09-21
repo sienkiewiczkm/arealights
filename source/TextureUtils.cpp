@@ -14,9 +14,14 @@ static GLuint uploadTextureToGPU(
     unsigned char* image, int width, int height, int components
 )
 {
+    LOG(INFO) << "Components: " << components;
+
     GLenum componentsEnum;
     switch (components)
     {
+    case 1:
+        componentsEnum = GL_RED;
+        break;
     case 3:
         componentsEnum = GL_RGB;
         break;

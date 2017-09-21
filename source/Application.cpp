@@ -70,6 +70,22 @@ void Application::onCreate()
     GLint maxTextureUnits;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
     LOG(INFO) << "Max texture units: " << maxTextureUnits;
+
+    _woodAlbedoTexture = std::make_unique<fw::Texture>(
+        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_basecolor.png"
+    );
+
+    _woodNormalTexture = std::make_unique<fw::Texture>(
+        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_normal.png"
+    );
+
+    _woodMetalnessTexture = std::make_unique<fw::Texture>(
+        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_metalness.png"
+    );
+
+    _woodRoughnessTexture = std::make_unique<fw::Texture>(
+        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_roughness.png"
+    );
 }
 
 void Application::onDestroy()
@@ -102,6 +118,17 @@ void Application::onRender()
     _deferredPipeline->setViewMatrix(viewMatrix);
     _deferredPipeline->setProjectionMatrix(projMatrix);
     _deferredPipeline->setMaterialID(0.1f);
+
+    _deferredPipeline->getShader()->setUniform("AlbedoTexture", 0);
+    _deferredPipeline->getShader()->setUniform("NormalTexture", 1);
+    _deferredPipeline->getShader()->setUniform("MetalnessTexture", 2);
+    _deferredPipeline->getShader()->setUniform("RoughnessTexture", 3);
+
+    _woodAlbedoTexture->bind(0);
+    _woodNormalTexture->bind(1);
+    _woodMetalnessTexture->bind(2);
+    _woodRoughnessTexture->bind(3);
+
     _planeMesh->render();
 
     auto lightWorldMatrix = glm::translate({}, _configurationUI.getPosition()) *

@@ -5,30 +5,37 @@
 
 in vec3 fsPosition;
 in vec3 fsNormal;
+in vec3 fsTangent;
 in vec2 fsTexCoord;
 
-uniform float MaterialID;
-
-layout (location = 0) out vec3 gPosition;
-layout (location = 1) out vec3 gNormal;
+layout (location = 0) out vec4 gPosition;
+layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gColor;
 
-float proceduralCheckerboardTexture(vec2 coordinate, int numCheckers)
-{
-    float checkerWidth = 1.0 / numCheckers;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform float MaterialID;
 
-    int xDivider = int(coordinate.x / checkerWidth);
-    int yDivider = int(coordinate.y / checkerWidth);
+uniform sampler2D AlbedoTexture;
+uniform sampler2D NormalTexture;
+uniform sampler2D MetalnessTexture;
+uniform sampler2D RoughnessTexture;
 
-    xDivider %= 2;
-    yDivider %= 2;
-
-    return (xDivider == yDivider) ? 1.0 : 0.0;
-}
+float textureScale = 16;
 
 void main()
 {
-    gPosition = fsPosition;
-    gNormal = normalize(fsNormal);
-    gColor = vec4(proceduralCheckerboardTexture(fsTexCoord, 32), 1.0, 1.0, MaterialID);
+		mat3 tbn = mat3(
+			normalize(fsTangent),
+			normalize(cross(fsTangent, fsNormal)),
+			normalize(fsNormal)
+		);
+
+    vec3 tbnNormal = normalize(texture(NormalTexture, fsTexCoord).rgb*2.0-1.0);
+    vec4 albedo = texture(AlbedoTexture, fsTexCoord * textureScale);
+		float roughness = texture(RoughnessTexture, fsTexCoord * textureScale).r;
+
+    gPosition = vec4(fsPosition, 0);
+    gNormal = vec4(normalize(tbn * tbnNormal), roughness);
+    gColor = vec4(albedo.rgb, MaterialID);
 }

@@ -26,6 +26,8 @@ public:
 
     glm::ivec2 getSize(int mipLevel = 0) const;
 
+    void bind(int slot);
+
 private:
     void loadTextureLDR(
         unsigned char* image,

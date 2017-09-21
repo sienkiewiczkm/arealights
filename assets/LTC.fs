@@ -190,7 +190,7 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
 
 const float pi = 3.14159265;
 
-vec3 shadeSurface(vec3 position, vec3 normal, vec4 albedo)
+vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 {
   vec3 points[4];
   float hw = 0.5*1.0;
@@ -202,7 +202,6 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec4 albedo)
 
   vec3 viewDir = normalize(-position);
 
-  float roughness = 0.15 + 0.45 * albedo.r;
   float theta = acos(dot(normal, viewDir));
   vec2 uv = vec2(roughness, theta/(0.5*pi));
   uv = uv * LUT_SCALE + LUT_BIAS;
@@ -221,7 +220,8 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec4 albedo)
   vec3 spec = LTC_Evaluate(normal, viewDir, position, Minv, points, false);
   spec *= mag;
 
-  vec3 color = diff+spec;
+  // this is physically WRONG
+  vec3 color = albedo * (diff + spec);
   color /= 2.0 * pi;
 
   return color;
@@ -229,20 +229,26 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec4 albedo)
 
 void main()
 {
-    vec4 color = texture(TargetTexture, fsTexCoords);
+    vec4 gbufferA = texture(PositionTexture, fsTexCoords);
+    vec4 gbufferB = texture(NormalTexture, fsTexCoords);
+    vec4 gbufferC = texture(TargetTexture, fsTexCoords);
 
-    if (color.a > 0.99)
+    float materialID = gbufferC.a;
+
+    if (materialID > 0.99)
     {
         FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 
-    vec3 position = texture(PositionTexture, fsTexCoords).xyz;
-    vec3 normal = normalize(texture(NormalTexture, fsTexCoords).xyz);
+    vec3 position = gbufferA.xyz;
+    vec3 normal = normalize(gbufferB.xyz);
+    vec3 albedo = gbufferC.rgb;
+    float roughness = gbufferB.a;
 
-    if (color.a < 0.15)
+    if (materialID < 0.15)
     {
-        FragColor = vec4(shadeSurface(position, normal, color), 1.0);
+        FragColor = vec4(shadeSurface(position, normal, albedo, roughness), 1.0);
     }
     else
     {

@@ -11,6 +11,7 @@
 #include "DeferredRenderingPipeline.hpp"
 #include "ArealightConfigurationUI.hpp"
 #include "inputs/GenericKeyboardInput.hpp"
+#include "Texture.hpp"
 #include "inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
 #include "LinearlyTransformedCosines.hpp"
@@ -62,6 +63,11 @@ private:
 
     std::shared_ptr<PointLightCluster> _pointLightCluster;
     std::shared_ptr<LinearlyTransformedCosines> _ltc;
+
+    std::unique_ptr<fw::Texture> _woodAlbedoTexture;
+    std::unique_ptr<fw::Texture> _woodNormalTexture;
+    std::unique_ptr<fw::Texture> _woodMetalnessTexture;
+    std::unique_ptr<fw::Texture> _woodRoughnessTexture;
 };
 
 }
