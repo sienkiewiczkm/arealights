@@ -21,7 +21,7 @@ uniform sampler2D NormalTexture;
 uniform sampler2D MetalnessTexture;
 uniform sampler2D RoughnessTexture;
 
-float textureScale = 16;
+float textureScale = 8.0f;
 
 void main()
 {
@@ -31,9 +31,10 @@ void main()
 			normalize(fsNormal)
 		);
 
-    vec3 tbnNormal = normalize(texture(NormalTexture, fsTexCoord).rgb*2.0-1.0);
-    vec4 albedo = texture(AlbedoTexture, fsTexCoord * textureScale);
-		float roughness = texture(RoughnessTexture, fsTexCoord * textureScale).r;
+    vec2 texCoord = fsTexCoord * textureScale;
+    vec3 tbnNormal = normalize(texture(NormalTexture, texCoord).rgb*2.0-1.0);
+    vec4 albedo = texture(AlbedoTexture, texCoord);
+    float roughness = texture(RoughnessTexture, texCoord).r;
 
     gPosition = vec4(fsPosition, 0);
     gNormal = vec4(normalize(tbn * tbnNormal), roughness);
