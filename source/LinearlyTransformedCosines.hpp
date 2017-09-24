@@ -2,9 +2,10 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #pragma once
-#include "Shaders.hpp"
-#include "RenderHelper.hpp"
 #include "PolygonalLight.hpp"
+#include "RenderHelper.hpp"
+#include "Shaders.hpp"
+#include "Texture.hpp"
 
 namespace arealights
 {
@@ -27,7 +28,9 @@ private:
     std::shared_ptr<RenderHelper> _renderHelper;
 
     std::unique_ptr<fw::ShaderProgram> _ltcShader;
-    unsigned int _ltcMat, _ltcMag;
+
+    std::unique_ptr<fw::Texture> _ltcLookupMatA;
+    std::unique_ptr<fw::Texture> _ltcLookupMatB;
 
     std::vector<PolygonalLight> _lights;
     glm::mat4 _viewMatrix;

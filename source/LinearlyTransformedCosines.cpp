@@ -3,14 +3,14 @@
 
 #include "LinearlyTransformedCosines.hpp"
 #include "Logging.hpp"
-#include "ltc.inc"
+#include "computed/ltc_fit.hpp"
 
 namespace arealights
 {
 
 LinearlyTransformedCosines::LinearlyTransformedCosines(
     std::shared_ptr<RenderHelper> renderHelper
-): _renderHelper{renderHelper}, _ltcMat{}, _ltcMag{}
+): _renderHelper{renderHelper}
 {
 }
 
@@ -50,68 +50,60 @@ void LinearlyTransformedCosines::render()
     _ltcShader->setUniform("TargetTexture", 0);
     _ltcShader->setUniform("NormalTexture", 1);
     _ltcShader->setUniform("PositionTexture", 2);
-    _ltcShader->setUniform("ltc_mat", 3);
-    _ltcShader->setUniform("ltc_mag", 4);
+    _ltcShader->setUniform("LTCLookupA", 3);
+    _ltcShader->setUniform("LTCLookupB", 4);
 
     _ltcShader->setUniform("viewMatrix", _viewMatrix);
     _ltcShader->setUniform("arealightTransform", _lights[0].transformation);
 
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
-
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, _ltcMag);
+    _ltcLookupMatA->bind(3);
+    _ltcLookupMatB->bind(4);
 
     _renderHelper->drawFullScreenQuad();
 }
 
 void LinearlyTransformedCosines::loadLookupTextures()
 {
-    glGenTextures(1, &_ltcMat);
-    glGenTextures(1, &_ltcMag);
+    unsigned int ltcMatA, ltcMatB;
+    std::vector<float> textureDataA, textureDataB;
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _ltcMat);
+    glGenTextures(1, &ltcMatA);
+    glGenTextures(1, &ltcMatB);
 
-    std::vector<float> textureData;
-    textureData.resize(4 * ltclookup::size * ltclookup::size);
+    textureDataA.resize(4 * ltc_fit::size * ltc_fit::size);
+    textureDataB.resize(3 * ltc_fit::size * ltc_fit::size);
 
-    for (auto i = 0; i < ltclookup::size; ++i)
+    for (auto theta = 0; theta < ltc_fit::size; ++theta)
     {
-        for (auto j = 0; j < ltclookup::size; ++j)
+        for (auto alpha = 0; alpha < ltc_fit::size; ++alpha)
         {
-            auto matIdx = ltclookup::size * j + i;
-            auto base = 4 * matIdx;
-            const auto& mat = ltclookup::tabM[matIdx];
+            auto matIdx = ltc_fit::size * theta + alpha;
+            auto baseA = 4 * matIdx;
+            auto baseB = 3 * matIdx;
 
-            const auto& a = mat[0][0];
-            const auto& b = mat[0][2];
-            const auto& c = mat[1][1];
-            const auto& d = mat[2][0];
+            const auto& mat = ltc_fit::tabMinv[matIdx];
 
-            textureData[base+0] = a;
-            textureData[base+1] = -b;
-            textureData[base+2] = (a-b*d)/c;
-            textureData[base+3] = -d;
+            textureDataA[baseA+0] = mat[0][0];
+            textureDataA[baseA+1] = mat[0][2];
+            textureDataA[baseA+2] = mat[1][1];
+            textureDataA[baseA+3] = mat[2][0];
+
+            textureDataB[baseB+0] = mat[2][2];
+            textureDataB[baseB+1] = ltc_fit::tabMagnitude[matIdx];
+            textureDataB[baseB+2] = ltc_fit::tabFresnel[matIdx];
         }
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glActiveTexture(GL_TEXTURE0);
+
+    glBindTexture(GL_TEXTURE_2D, ltcMatA);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        ltclookup::size,
-        ltclookup::size,
-        0,
-        GL_RGBA,
-        GL_FLOAT,
-        textureData.data()
-    );
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ltc_fit::size, ltc_fit::size,
+        0, GL_RGBA, GL_FLOAT, textureDataA.data());
 
     GLenum err;
     while((err = glGetError()) != GL_NO_ERROR)
@@ -119,23 +111,24 @@ void LinearlyTransformedCosines::loadLookupTextures()
         LOG(ERROR) << err;
     }
 
-    glBindTexture(GL_TEXTURE_2D, _ltcMag);
+    glBindTexture(GL_TEXTURE_2D, ltcMatB);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RED,
-        ltclookup::size,
-        ltclookup::size,
-        0,
-        GL_RED,
-        GL_FLOAT,
-        ltclookup::tabAmplitude
-    );
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ltc_fit::size, ltc_fit::size,
+        0, GL_RGB, GL_FLOAT, textureDataB.data());
+
+    while((err = glGetError()) != GL_NO_ERROR)
+    {
+        LOG(ERROR) << err;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    _ltcLookupMatA = std::make_unique<fw::Texture>(ltcMatA);
+    _ltcLookupMatB = std::make_unique<fw::Texture>(ltcMatB);
 }
 
 }

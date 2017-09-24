@@ -1,5 +1,11 @@
 // arealights (2017)
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
+//
+// Lots of code here comes directly from:
+//  Real-Time Polygonal-Light Shading with Linearly Transformed Cosines.
+//  Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt.
+//  ACM Transactions on Graphics (Proceedings of ACM SIGGRAPH 2016) 35(4), 2016.
+//  Project page: https://eheitzresearch.wordpress.com/415-2/
 
 #version 330 core
 
@@ -13,8 +19,8 @@ uniform sampler2D TargetTexture;
 uniform sampler2D PositionTexture;
 uniform sampler2D NormalTexture;
 
-uniform sampler2D ltc_mat;
-uniform sampler2D ltc_mag;
+uniform sampler2D LTCLookupA;
+uniform sampler2D LTCLookupB;
 
 uniform mat4 arealightTransform;
 
@@ -24,11 +30,16 @@ const float LUT_BIAS = 0.5/LUT_SIZE;
 
 float IntegrateEdge(vec3 v1, vec3 v2)
 {
-    float cosTheta = dot(v1, v2);
-    float theta = acos(cosTheta);
-    float res = cross(v1, v2).z * ((theta > 0.001) ? theta/sin(theta) : 1.0);
+    float x = dot(v1, v2);
+    float y = abs(x);
 
-    return res;
+    float a = 0.8543985 + (0.4965155 + 0.0145206*y)*y;
+    float b = 3.4175940 + (4.1616724 + y)*y;
+    float v = a / b;
+
+    float theta_sintheta = (x > 0.0) ? v : 0.5*inversesqrt(1.0 - x*x) - v;
+
+    return (cross(v1, v2)*theta_sintheta).z;
 }
 
 void ClipQuadToHorizon(inout vec3 L[5], out int n)
@@ -183,7 +194,7 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
 
     sum = twoSided ? abs(sum) : max(0.0, sum);
 
-    vec3 Lo_i = vec3(sum, sum, sum);
+    vec3 Lo_i = vec3(sum);
 
     return Lo_i;
 }
@@ -210,27 +221,30 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 
   vec3 viewDir = normalize(-position);
 
-  float theta = acos(dot(normal, viewDir));
-  vec2 uv = vec2(roughness, theta/(0.5*pi));
-  uv = uv * LUT_SCALE + LUT_BIAS;
-  uv = uv.yx;
+  float ndotv = clamp(dot(normal, viewDir), 0, 1);
+  vec2 uv = vec2(roughness, sqrt(1 - ndotv));
+  uv = uv*LUT_SCALE + LUT_BIAS;
 
-  vec4 t = texture(ltc_mat, uv);
-  float mag = texture(ltc_mag, uv).r;
+  vec4 ltcLookupA = texture(LTCLookupA, uv).rgba;
+  vec3 ltcLookupB = texture(LTCLookupB, uv).rgb;
+  float ltcMagnitude = ltcLookupB.y;
+  float ltcFresnel = ltcLookupB.z;
 
   mat3 Minv = mat3(
-      vec3(1,   0,   t.y),
-      vec3(0,   t.z, 0),
-      vec3(t.w, 0,   t.x)
+      vec3(ltcLookupA.x, 0,            ltcLookupA.y),
+      vec3(0,            ltcLookupA.z, 0),
+      vec3(ltcLookupA.w, 0,            ltcLookupB.x)
   );
 
   vec3 diff = LTC_Evaluate(normal, viewDir, position, mat3(1), points, false);
-  vec3 spec = LTC_Evaluate(normal, viewDir, position, Minv, points, false);
-  spec *= mag;
 
-  // this is physically WRONG
-  vec3 color = albedo * (diff + spec);
-  color /= 2.0 * pi;
+  vec3 specularColor = vec3(0.25);
+  vec3 lightColor = vec3(2);
+
+  vec3 spec = LTC_Evaluate(normal, viewDir, position, Minv, points, false);
+  spec *= specularColor * ltcMagnitude + (1 - specularColor) * ltcFresnel;
+
+  vec3 color = lightColor * (spec + albedo * diff);
 
   return color;
 }
