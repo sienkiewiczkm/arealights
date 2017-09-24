@@ -40,8 +40,9 @@ void ArealightConfigurationUI::update()
         ImGui::DragFloat2("Size", glm::value_ptr(_size), 0.1f, 0.01f, 100.0f);
         ImGui::DragFloat("Rotation X", &_rotationX, 1.0f, -360.0f, 360.0f);
         ImGui::DragFloat("Rotation Y", &_rotationY, 1.0f, -360.0f, 360.0f);
-        ImGui::End();
     }
+
+    ImGui::End();
 }
 
 }

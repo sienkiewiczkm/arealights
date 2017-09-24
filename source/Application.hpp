@@ -10,6 +10,7 @@
 #include "FreeCameraInputMapper.hpp"
 #include "DeferredRenderingPipeline.hpp"
 #include "ArealightConfigurationUI.hpp"
+#include "SceneUI.hpp"
 #include "inputs/GenericKeyboardInput.hpp"
 #include "Texture.hpp"
 #include "inputs/GenericMouseInput.hpp"
@@ -60,6 +61,7 @@ private:
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
     ArealightConfigurationUI _configurationUI;
+    SceneUI _sceneUI;
 
     std::shared_ptr<PointLightCluster> _pointLightCluster;
     std::shared_ptr<LinearlyTransformedCosines> _ltc;

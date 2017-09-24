@@ -56,6 +56,7 @@ set(AREALIGHTS_SOURCE_FILES
   source/OrbitingCamera.cpp
   source/PointLightCluster.cpp
   source/RenderHelper.cpp
+  source/SceneUI.cpp
   source/Shaders.cpp
   source/StbImplementation.c
   source/Texture.cpp

@@ -100,6 +100,7 @@ void Application::onUpdate(
     ImGuiApplication::onUpdate(deltaTime);
     _cameraInputMapper.update(deltaTime);
     _configurationUI.update();
+    _sceneUI.update();
 }
 
 void Application::onRender()
@@ -128,6 +129,16 @@ void Application::onRender()
     _woodNormalTexture->bind(1);
     _woodMetalnessTexture->bind(2);
     _woodRoughnessTexture->bind(3);
+
+    _deferredPipeline->getShader()->setUniform(
+        "SolidMode",
+        _sceneUI.getSceneId()
+    );
+
+    _deferredPipeline->getShader()->setUniform(
+        "RoughnessConst",
+        _sceneUI.getRoughness()
+    );
 
     _planeMesh->render();
 

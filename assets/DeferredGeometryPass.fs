@@ -21,6 +21,9 @@ uniform sampler2D NormalTexture;
 uniform sampler2D MetalnessTexture;
 uniform sampler2D RoughnessTexture;
 
+uniform int SolidMode;
+uniform float RoughnessConst;
+
 float textureScale = 8.0f;
 
 vec3 toLinear(vec3 color) {
@@ -29,18 +32,28 @@ vec3 toLinear(vec3 color) {
 
 void main()
 {
-		mat3 tbn = mat3(
-			normalize(fsTangent),
-			normalize(cross(fsTangent, fsNormal)),
-			normalize(fsNormal)
-		);
+    vec3 albedo = vec3(1);
+    float roughness = RoughnessConst;
+    vec3 normal = fsNormal;
 
-    vec2 texCoord = fsTexCoord * textureScale;
-    vec3 tbnNormal = normalize(texture(NormalTexture, texCoord).rgb*2.0-1.0);
-    vec3 albedo = toLinear(texture(AlbedoTexture, texCoord).rgb);
-    float roughness = texture(RoughnessTexture, texCoord).r;
+    // todo: remove this ugly branch
+    if (SolidMode == 1)
+    {
+      mat3 tbn = mat3(
+        normalize(fsTangent),
+        normalize(cross(fsTangent, fsNormal)),
+        normalize(fsNormal)
+      );
+
+      vec2 texCoord = fsTexCoord * textureScale;
+      vec3 tbnNormal = normalize(texture(NormalTexture, texCoord).rgb*2.0-1.0);
+
+      albedo = toLinear(texture(AlbedoTexture, texCoord).rgb);
+      roughness = texture(RoughnessTexture, texCoord).r;
+      normal = normalize(tbn * tbnNormal);
+    }
 
     gPosition = vec4(fsPosition, 0);
-    gNormal = vec4(normalize(tbn * tbnNormal), roughness);
     gColor = vec4(albedo, MaterialID);
+    gNormal = vec4(normal, roughness);
 }
