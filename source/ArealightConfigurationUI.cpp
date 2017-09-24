@@ -11,7 +11,7 @@ namespace arealights
 ArealightConfigurationUI::ArealightConfigurationUI():
     _rotationX{},
     _rotationY{},
-    _position{0.0f, 1.0f, 0.0f},
+    _position{0.0f, 0.5f, 0.0f},
     _size{1.0f, 1.0f},
     _selectedArealightMethod{1}
 {
