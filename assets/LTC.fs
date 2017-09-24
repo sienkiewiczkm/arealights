@@ -190,6 +190,14 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
 
 const float pi = 3.14159265;
 
+vec3 toLinear(vec3 color) {
+  return pow(color, vec3(2.2));
+}
+
+vec3 toSRGB(vec3 color) {
+  return pow(color, vec3(1.0/2.2));
+}
+
 vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 {
   vec3 points[4];
@@ -248,7 +256,9 @@ void main()
 
     if (materialID < 0.15)
     {
-        FragColor = vec4(shadeSurface(position, normal, albedo, roughness), 1.0);
+        vec3 surfaceColor = shadeSurface(position, normal, albedo, roughness);
+        surfaceColor = toSRGB(surfaceColor);
+        FragColor = vec4(surfaceColor, 1.0);
     }
     else
     {

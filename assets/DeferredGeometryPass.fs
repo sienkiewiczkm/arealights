@@ -23,6 +23,10 @@ uniform sampler2D RoughnessTexture;
 
 float textureScale = 8.0f;
 
+vec3 toLinear(vec3 color) {
+  return pow(color, vec3(2.2));
+}
+
 void main()
 {
 		mat3 tbn = mat3(
@@ -33,10 +37,10 @@ void main()
 
     vec2 texCoord = fsTexCoord * textureScale;
     vec3 tbnNormal = normalize(texture(NormalTexture, texCoord).rgb*2.0-1.0);
-    vec4 albedo = texture(AlbedoTexture, texCoord);
+    vec3 albedo = toLinear(texture(AlbedoTexture, texCoord).rgb);
     float roughness = texture(RoughnessTexture, texCoord).r;
 
     gPosition = vec4(fsPosition, 0);
     gNormal = vec4(normalize(tbn * tbnNormal), roughness);
-    gColor = vec4(albedo.rgb, MaterialID);
+    gColor = vec4(albedo, MaterialID);
 }
