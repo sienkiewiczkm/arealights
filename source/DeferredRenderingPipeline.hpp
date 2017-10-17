@@ -4,7 +4,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
-#include "Shaders.hpp"
+#include "framework/Shaders.hpp"
 
 namespace arealights
 {

@@ -4,9 +4,9 @@
 #pragma once
 #include <memory>
 #include <chrono>
-#include "inputs/IKeyboardInput.hpp"
-#include "inputs/IMouseInput.hpp"
-#include "FreeCamera.hpp"
+#include "framework/inputs/IKeyboardInput.hpp"
+#include "framework/inputs/IMouseInput.hpp"
+#include "framework/FreeCamera.hpp"
 
 namespace arealights
 {

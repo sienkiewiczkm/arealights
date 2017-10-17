@@ -2,10 +2,10 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #pragma once
-#include "OpenGLApplication.hpp"
-#include "Shaders.hpp"
-#include "Mesh.hpp"
-#include "Vertices.hpp"
+#include "framework/OpenGLApplication.hpp"
+#include "framework/Shaders.hpp"
+#include "framework/Mesh.hpp"
+#include "framework/Vertices.hpp"
 
 namespace arealights
 {

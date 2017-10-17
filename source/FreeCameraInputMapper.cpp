@@ -2,7 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "FreeCameraInputMapper.hpp"
-#include "OpenGL.hpp"
+#include "framework/OpenGL.hpp"
 #include "glm/glm.hpp"
 
 namespace arealights

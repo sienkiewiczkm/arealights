@@ -2,8 +2,8 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "RenderHelper.hpp"
-#include "OpenGL.hpp"
-#include "BasicMeshes.hpp"
+#include "framework/OpenGL.hpp"
+#include "framework/BasicMeshes.hpp"
 
 namespace arealights
 {

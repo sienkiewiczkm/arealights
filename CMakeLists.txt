@@ -41,30 +41,30 @@ set(AREALIGHTS_DEPENDENCIES_SOURCE_FILES
 set(AREALIGHTS_SOURCE_FILES
   source/Application.cpp
   source/ArealightConfigurationUI.cpp
-  source/Common.cpp
+        source/framework/Common.cpp
   source/DeferredRenderingPipeline.cpp
-  source/Effect.cpp
-  source/Framework.cpp
-  source/FreeCamera.cpp
+        source/framework/Effect.cpp
+        source/framework/Framework.cpp
+        source/framework/FreeCamera.cpp
   source/FreeCameraInputMapper.cpp
-  source/ImGuiApplication.cpp
-  source/ImGuiBinding.cpp
-  source/ImGuiExtensions.cpp
-  source/LinearlyTransformedCosines.cpp
+        source/framework/ImGuiApplication.cpp
+        source/framework/ImGuiBinding.cpp
+        source/framework/ImGuiExtensions.cpp
+        source/ltc/LinearlyTransformedCosines.cpp
   source/Main.cpp
-  source/OpenGLApplication.cpp
-  source/OrbitingCamera.cpp
+        source/framework/OpenGLApplication.cpp
+        source/framework/OrbitingCamera.cpp
   source/PointLightCluster.cpp
   source/RenderHelper.cpp
   source/SceneUI.cpp
-  source/Shaders.cpp
-  source/StbImplementation.c
-  source/Texture.cpp
-  source/TextureUtils.cpp
-  source/Vertices.cpp
-  source/common/StreamUtils.cpp
-  source/inputs/GenericKeyboardInput.cpp
-  source/inputs/GenericMouseInput.cpp
+        source/framework/Shaders.cpp
+        source/framework/StbImplementation.c
+        source/framework/Texture.cpp
+        source/framework/TextureUtils.cpp
+        source/framework/Vertices.cpp
+        source/framework/common/StreamUtils.cpp
+        source/framework/inputs/GenericKeyboardInput.cpp
+        source/framework/inputs/GenericMouseInput.cpp
 )
 
 add_executable(

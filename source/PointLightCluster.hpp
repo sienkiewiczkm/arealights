@@ -4,7 +4,7 @@
 #pragma once
 
 #include "RenderHelper.hpp"
-#include "Shaders.hpp"
+#include "framework/Shaders.hpp"
 #include "PolygonalLight.hpp"
 
 namespace arealights

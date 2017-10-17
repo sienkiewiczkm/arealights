@@ -2,10 +2,10 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #pragma once
-#include "PolygonalLight.hpp"
-#include "RenderHelper.hpp"
-#include "Shaders.hpp"
-#include "Texture.hpp"
+#include "../PolygonalLight.hpp"
+#include "../RenderHelper.hpp"
+#include "../framework/Shaders.hpp"
+#include "../framework/Texture.hpp"
 
 namespace arealights
 {

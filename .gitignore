@@ -1,5 +1,4 @@
-# Default CMake directories
-build
+build/
 
 # vim temporary files
 *.swo
@@ -14,6 +13,7 @@ build
 
 # CLion
 .idea/
+cmake-build-debug/
 
 # YCM files
 .ycm_extra*

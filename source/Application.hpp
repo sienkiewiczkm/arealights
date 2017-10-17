@@ -2,20 +2,20 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #pragma once
-#include "ImGuiApplication.hpp"
-#include "Vertices.hpp"
-#include "Mesh.hpp"
-#include "Shaders.hpp"
-#include "FreeCamera.hpp"
+#include "framework/ImGuiApplication.hpp"
+#include "framework/Vertices.hpp"
+#include "framework/Mesh.hpp"
+#include "framework/Shaders.hpp"
+#include "framework/FreeCamera.hpp"
 #include "FreeCameraInputMapper.hpp"
 #include "DeferredRenderingPipeline.hpp"
 #include "ArealightConfigurationUI.hpp"
 #include "SceneUI.hpp"
-#include "inputs/GenericKeyboardInput.hpp"
-#include "Texture.hpp"
-#include "inputs/GenericMouseInput.hpp"
+#include "framework/inputs/GenericKeyboardInput.hpp"
+#include "framework/Texture.hpp"
+#include "framework/inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
-#include "LinearlyTransformedCosines.hpp"
+#include "ltc/LinearlyTransformedCosines.hpp"
 #include "PointLightCluster.hpp"
 #include <memory>
 

@@ -2,8 +2,8 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "DeferredRenderingPipeline.hpp"
-#include "OpenGL.hpp"
-#include "Logging.hpp"
+#include "framework/OpenGL.hpp"
+#include "framework/Logging.hpp"
 
 namespace arealights
 {

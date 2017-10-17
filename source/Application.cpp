@@ -2,7 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "Application.hpp"
-#include "BasicMeshes.cpp"
+#include "framework/BasicMeshes.cpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
 
