@@ -63,6 +63,9 @@ private:
     ArealightConfigurationUI _configurationUI;
     SceneUI _sceneUI;
 
+    unsigned int _intermediateFBO;
+    unsigned int _intermediateFBOTexture;
+
     std::shared_ptr<PointLightCluster> _pointLightCluster;
     std::shared_ptr<LinearlyTransformedCosines> _ltc;
 

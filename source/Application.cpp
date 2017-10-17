@@ -64,8 +64,9 @@ void Application::onCreate()
     _cameraInputMapper.setKeyboardInput(_keyboardInput);
     _cameraInputMapper.setMouseInput(_mouseInput);
 
+    glm::ivec2 resolution{800, 600};
     _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
-    _deferredPipeline->create({800, 600});
+    _deferredPipeline->create(resolution);
 
     GLint maxTextureUnits;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
@@ -86,6 +87,30 @@ void Application::onCreate()
     _woodRoughnessTexture = std::make_unique<fw::Texture>(
         "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_roughness.png"
     );
+
+    {
+        glGenFramebuffers(1, &_intermediateFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
+
+        glGenTextures(1, &_intermediateFBOTexture);
+        glBindTexture(GL_TEXTURE_2D, _intermediateFBOTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, resolution.x, resolution.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _intermediateFBOTexture, 0);
+
+        unsigned int rboDepth;
+        glGenRenderbuffers(1, &rboDepth);
+        glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            LOG(ERROR) << "Framebuffer not complete!" << std::endl;
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 }
 
 void Application::onDestroy()
@@ -167,10 +192,12 @@ void Application::onRender()
     // this will be done once valid architecture shape will emerge
     _deferredPipeline->startLightingPass();
     _deferredPipeline->endLightingPass();
+    auto gbufferResolution = _deferredPipeline->getFramebufferSize();
 
     auto mode = _configurationUI.getArealightMethod();
 
-    glViewport(0, 0, framebufferSize.x, framebufferSize.y);
+    glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
+    glViewport(0, 0, gbufferResolution.x, gbufferResolution.y);
     glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -179,12 +206,11 @@ void Application::onRender()
     auto colorBuffer = _deferredPipeline->getColorBuffer();
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, _deferredPipeline->getFramebuffer());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _intermediateFBO);
 
-    auto gbufferResolution = _deferredPipeline->getFramebufferSize();
     glBlitFramebuffer(
         0, 0, gbufferResolution.x, gbufferResolution.y,
-        0, 0, framebufferSize.x, framebufferSize.y,
+        0, 0, gbufferResolution.x, gbufferResolution.y,
         GL_DEPTH_BUFFER_BIT,
         GL_NEAREST
     );
@@ -214,6 +240,20 @@ void Application::onRender()
         _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _pointLightCluster->render();
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, framebufferSize.x, framebufferSize.y);
+    glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, _intermediateFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(
+        0, 0, gbufferResolution.x, gbufferResolution.y,
+        0, 0, framebufferSize.x, framebufferSize.y,
+        GL_COLOR_BUFFER_BIT,
+        GL_LINEAR
+    );
 
     if (ImGui::BeginMainMenuBar())
     {
