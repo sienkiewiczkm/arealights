@@ -5,6 +5,7 @@
 #include "framework/BasicMeshes.cpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
+#include "point_light_cluster/PointLightCluster.hpp"
 
 namespace arealights
 {
@@ -125,6 +126,12 @@ void Application::onUpdate(
     ImGuiApplication::onUpdate(deltaTime);
     _cameraInputMapper.update(deltaTime);
     _configurationUI.update();
+
+    // TODO: Remove magic codes
+    if (_configurationUI.getArealightMethod() == 2) {
+        _plcConfigurationUI.update();
+    }
+
     _sceneUI.update();
 }
 
@@ -236,6 +243,7 @@ void Application::onRender()
     }
     else if (mode == 2)
     {
+        _pointLightCluster->setClusterSize(_plcConfigurationUI.getClusterSize());
         _pointLightCluster->setCamera(viewMatrix, projMatrix);
         _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _pointLightCluster->render();

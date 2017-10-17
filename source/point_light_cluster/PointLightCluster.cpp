@@ -2,7 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "PointLightCluster.hpp"
-#include "framework/Logging.hpp"
+#include "../framework/Logging.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
 
@@ -12,7 +12,8 @@ namespace arealights
 PointLightCluster::PointLightCluster(
     std::shared_ptr<RenderHelper> renderHelper
 ):
-    _renderHelper{renderHelper}
+    _renderHelper{renderHelper},
+    _clusterSize{4, 4}
 {
 }
 
@@ -63,10 +64,6 @@ void PointLightCluster::render()
 
     glDisable(GL_DEPTH_TEST);
 
-    // hack: Hardcoded quad type
-    const int numLightsX = 4;
-    const int numLightsY = 4;
-
     const float attConst = 1.0f;
     const float attLinear = 0.7f;
     const float attQuadratic = 1.8f;
@@ -87,11 +84,11 @@ void PointLightCluster::render()
     auto normalViewMatrix = glm::transpose(glm::inverse(_viewMatrix)) * normalWorldMatrix;
     glm::vec3 lightViewNormal = normalViewMatrix * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f};
 
-    for (int i = 0; i < numLightsX; ++i)
-    for (int j = 0; j < numLightsY; ++j)
+    for (int i = 0; i < _clusterSize.x; ++i)
+    for (int j = 0; j < _clusterSize.y; ++j)
     {
-        float x = (i/static_cast<float>(numLightsX-1)) - 0.5f;
-        float y = (j/static_cast<float>(numLightsY-1)) - 0.5f;
+        float x = ((i+1)/static_cast<float>(_clusterSize.x+1)) - 0.5f;
+        float y = ((j+1)/static_cast<float>(_clusterSize.y+1)) - 0.5f;
 
         glm::vec4 pointLightPosition{x, y, 0.0f, 1.0f};
         auto worldLightPosition = _lights[0].transformation * pointLightPosition;
@@ -130,7 +127,7 @@ void PointLightCluster::render()
         _shader->setUniform("NormalTexture", 1);
         _shader->setUniform("PositionTexture", 2);
 
-        _shader->setUniform("NumPointLights", numLightsX * numLightsY);
+        _shader->setUniform("NumPointLights", _clusterSize.x * _clusterSize.y);
         _shader->setUniform("LightViewPosition", lightViewPosition);
         _shader->setUniform("LightViewNormal", lightViewNormal);
 

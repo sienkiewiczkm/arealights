@@ -10,53 +10,53 @@ find_package(OpenGL REQUIRED)
 
 find_package(glfw3 3.3)
 if (glfw3_FOUND)
-  message("GLFW 3.3 found successfully in ${glfw3_DIR}.")
-else()
-  message("GLFW 3.3 not found. Library will be compiled from sources.")
+    message("GLFW 3.3 found successfully in ${glfw3_DIR}.")
+else ()
+    message("GLFW 3.3 not found. Library will be compiled from sources.")
 
-  if (WIN32)
-    set(GLFW_ADDITIONAL_DEFINITIONS "${GLFW_ADDITIONAL_DEFINITIONS} GLFW_EXPOSE_NATIVE_WIN32")
-    set(ADDITIONAL_DEFINITIONS "${ADDITIONAL_DEFINITIONS} GLFW_EXPOSE_NATIVE_WIN32")
-  endif()
+    if (WIN32)
+        set(GLFW_ADDITIONAL_DEFINITIONS "${GLFW_ADDITIONAL_DEFINITIONS} GLFW_EXPOSE_NATIVE_WIN32")
+        set(ADDITIONAL_DEFINITIONS "${ADDITIONAL_DEFINITIONS} GLFW_EXPOSE_NATIVE_WIN32")
+    endif ()
 
-  # glfw: do not build docs, tests and examples
-  set(GLFW_BUILD_DOCS OFF CACHE BOOL "")
-  set(GLFW_BUILD_TESTS OFF CACHE BOOL "")
-  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
-  add_subdirectory(${DEPENDENCIES_DIR}glfw)
-  target_compile_definitions(glfw PRIVATE ${GLFW_ADDITIONAL_DEFINITIONS})
-endif()
+    # glfw: do not build docs, tests and examples
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "")
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "")
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
+    add_subdirectory(${DEPENDENCIES_DIR}glfw)
+    target_compile_definitions(glfw PRIVATE ${GLFW_ADDITIONAL_DEFINITIONS})
+endif ()
 
 #configure_file(${PROJECT_SOURCE_DIR}/configuration/Config.hpp.in ${PROJECT_BINARY_DIR}/configuration/Config.hpp)
 
 set(AREALIGHTS_DEPENDENCIES_SOURCE_FILES
-  ${DEPENDENCIES_DIR}/ImGuizmo/ImGuizmo.cpp
-  ${DEPENDENCIES_DIR}/easyloggingpp/src/easylogging++.cc
-  ${DEPENDENCIES_DIR}/glad-lib/src/glad.c
-  ${DEPENDENCIES_DIR}/imgui/imgui.cpp
-  ${DEPENDENCIES_DIR}/imgui/imgui_demo.cpp
-  ${DEPENDENCIES_DIR}/imgui/imgui_draw.cpp
-)
+        ${DEPENDENCIES_DIR}/ImGuizmo/ImGuizmo.cpp
+        ${DEPENDENCIES_DIR}/easyloggingpp/src/easylogging++.cc
+        ${DEPENDENCIES_DIR}/glad-lib/src/glad.c
+        ${DEPENDENCIES_DIR}/imgui/imgui.cpp
+        ${DEPENDENCIES_DIR}/imgui/imgui_demo.cpp
+        ${DEPENDENCIES_DIR}/imgui/imgui_draw.cpp
+        )
 
 set(AREALIGHTS_SOURCE_FILES
-  source/Application.cpp
-  source/ArealightConfigurationUI.cpp
+        source/Application.cpp
+        source/ArealightConfigurationUI.cpp
         source/framework/Common.cpp
-  source/DeferredRenderingPipeline.cpp
+        source/DeferredRenderingPipeline.cpp
         source/framework/Effect.cpp
         source/framework/Framework.cpp
         source/framework/FreeCamera.cpp
-  source/FreeCameraInputMapper.cpp
+        source/FreeCameraInputMapper.cpp
         source/framework/ImGuiApplication.cpp
         source/framework/ImGuiBinding.cpp
         source/framework/ImGuiExtensions.cpp
         source/ltc/LinearlyTransformedCosines.cpp
-  source/Main.cpp
+        source/Main.cpp
         source/framework/OpenGLApplication.cpp
         source/framework/OrbitingCamera.cpp
-  source/PointLightCluster.cpp
-  source/RenderHelper.cpp
-  source/SceneUI.cpp
+        source/point_light_cluster/PointLightCluster.cpp
+        source/RenderHelper.cpp
+        source/SceneUI.cpp
         source/framework/Shaders.cpp
         source/framework/StbImplementation.c
         source/framework/Texture.cpp
@@ -65,48 +65,48 @@ set(AREALIGHTS_SOURCE_FILES
         source/framework/common/StreamUtils.cpp
         source/framework/inputs/GenericKeyboardInput.cpp
         source/framework/inputs/GenericMouseInput.cpp
-)
+        source/point_light_cluster/PLCConfigurationUI.cpp source/point_light_cluster/PLCConfigurationUI.hpp)
 
 add_executable(
-  ${PROJECT_NAME}
-  ${AREALIGHTS_SOURCE_FILES}
-  ${AREALIGHTS_DEPENDENCIES_SOURCE_FILES}
+        ${PROJECT_NAME}
+        ${AREALIGHTS_SOURCE_FILES}
+        ${AREALIGHTS_DEPENDENCIES_SOURCE_FILES}
 )
 
 target_include_directories(${PROJECT_NAME}
-  PUBLIC ${DEPENDENCIES_DIR}/ImGuizmo
-  PUBLIC ${DEPENDENCIES_DIR}/easyloggingpp/src
-  PUBLIC ${DEPENDENCIES_DIR}/glad-lib/include
-  PUBLIC ${DEPENDENCIES_DIR}/glfw/include
-  PUBLIC ${DEPENDENCIES_DIR}/glm
-  PUBLIC ${DEPENDENCIES_DIR}/imgui
-  PUBLIC ${DEPENDENCIES_DIR}/stb
-  PUBLIC ${PROJECT_SOURCE_DIR}/include
-)
+        PUBLIC ${DEPENDENCIES_DIR}/ImGuizmo
+        PUBLIC ${DEPENDENCIES_DIR}/easyloggingpp/src
+        PUBLIC ${DEPENDENCIES_DIR}/glad-lib/include
+        PUBLIC ${DEPENDENCIES_DIR}/glfw/include
+        PUBLIC ${DEPENDENCIES_DIR}/glm
+        PUBLIC ${DEPENDENCIES_DIR}/imgui
+        PUBLIC ${DEPENDENCIES_DIR}/stb
+        PUBLIC ${PROJECT_SOURCE_DIR}/include
+        )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-  ${PROJECT_BINARY_DIR}/configuration
-  ${PROJECT_SOURCE_DIR}/include/fw
-)
+        ${PROJECT_BINARY_DIR}/configuration
+        ${PROJECT_SOURCE_DIR}/include/fw
+        )
 
 target_compile_definitions(${PROJECT_NAME}
-  PUBLIC ${ADDITIONAL_DEFINITIONS}
-)
+        PUBLIC ${ADDITIONAL_DEFINITIONS}
+        )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${OPENGL_gl_LIBRARY}
-  assimp
-  glfw
-)
+        ${OPENGL_gl_LIBRARY}
+        assimp
+        glfw
+        )
 
 set(PROJECT_COMPILE_FEATURES
-  ${PROJECT_COMPILE_FEATURES}
-  cxx_std_14
-  cxx_auto_type
-  cxx_nullptr
-  cxx_range_for
-)
+        ${PROJECT_COMPILE_FEATURES}
+        cxx_std_14
+        cxx_auto_type
+        cxx_nullptr
+        cxx_range_for
+        )
 
 target_compile_features(${PROJECT_NAME}
-  PUBLIC ${PROJECT_COMPILE_FEATURES}
-)
+        PUBLIC ${PROJECT_COMPILE_FEATURES}
+        )

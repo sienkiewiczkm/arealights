@@ -16,7 +16,8 @@
 #include "framework/inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
 #include "ltc/LinearlyTransformedCosines.hpp"
-#include "PointLightCluster.hpp"
+#include "point_light_cluster/PLCConfigurationUI.hpp"
+#include "point_light_cluster/PointLightCluster.hpp"
 #include <memory>
 
 namespace arealights
@@ -73,6 +74,7 @@ private:
     std::unique_ptr<fw::Texture> _woodNormalTexture;
     std::unique_ptr<fw::Texture> _woodMetalnessTexture;
     std::unique_ptr<fw::Texture> _woodRoughnessTexture;
+    PLCConfigurationUI _plcConfigurationUI;
 };
 
 }
