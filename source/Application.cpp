@@ -10,7 +10,8 @@
 namespace arealights
 {
 
-Application::Application()
+Application::Application():
+    _restartIncrementalRendering{false}
 {
 }
 
@@ -26,6 +27,9 @@ void Application::onCreate()
 
     _pointLightCluster = std::make_shared<PointLightCluster>(_renderHelper);
     _pointLightCluster->init();
+
+    _groundTruth = std::make_shared<GroundTruth>(_renderHelper);
+    _groundTruth->init();
 
     _ltc = std::make_shared<LinearlyTransformedCosines>(_renderHelper);
     _ltc->init();
@@ -124,8 +128,15 @@ void Application::onUpdate(
 )
 {
     ImGuiApplication::onUpdate(deltaTime);
+
     _cameraInputMapper.update(deltaTime);
+    _restartIncrementalRendering = _cameraInputMapper.hadMovement();
+
+    auto oldMethod = _configurationUI.getArealightMethod();
     _configurationUI.update();
+
+    _restartIncrementalRendering =
+            _cameraInputMapper.hadMovement() || (_configurationUI.getArealightMethod() != oldMethod);
 
     // TODO: Remove magic codes
     if (_configurationUI.getArealightMethod() == 2) {
@@ -162,15 +173,8 @@ void Application::onRender()
     _woodMetalnessTexture->bind(2);
     _woodRoughnessTexture->bind(3);
 
-    _deferredPipeline->getShader()->setUniform(
-        "SolidMode",
-        _sceneUI.getSceneId()
-    );
-
-    _deferredPipeline->getShader()->setUniform(
-        "RoughnessConst",
-        _sceneUI.getRoughness()
-    );
+    _deferredPipeline->getShader()->setUniform("SolidMode", _sceneUI.getSceneId());
+    _deferredPipeline->getShader()->setUniform("RoughnessConst", _sceneUI.getRoughness());
 
     _planeMesh->render();
 
@@ -205,8 +209,23 @@ void Application::onRender()
 
     glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
     glViewport(0, 0, gbufferResolution.x, gbufferResolution.y);
-    glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    GLbitfield clearMask = GL_DEPTH_BUFFER_BIT;
+
+    const auto isIncremental = (mode == 3);
+
+    if (mode == 3 && _restartIncrementalRendering) {
+        _groundTruth->restartIncrementalRendering();
+    }
+
+    if (!isIncremental || _restartIncrementalRendering)
+    {
+        clearMask |= GL_COLOR_BUFFER_BIT;
+        _restartIncrementalRendering = false;
+    }
+
+    glClear(clearMask);
 
     auto positionBuffer = _deferredPipeline->getPositionBuffer();
     auto normalBuffer = _deferredPipeline->getNormalBuffer();
@@ -248,20 +267,25 @@ void Application::onRender()
         _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _pointLightCluster->render();
     }
+    else if (mode == 3)
+    {
+        _groundTruth->setCamera(viewMatrix, projMatrix);
+        _groundTruth->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
+        _groundTruth->render();
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, framebufferSize.x, framebufferSize.y);
     glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, _intermediateFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(
-        0, 0, gbufferResolution.x, gbufferResolution.y,
-        0, 0, framebufferSize.x, framebufferSize.y,
-        GL_COLOR_BUFFER_BIT,
-        GL_LINEAR
-    );
+    _textureBlitShader->use();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _intermediateFBOTexture);
+    _textureBlitShader->setUniform("TargetTexture", 0);
+
+    _renderHelper->drawFullScreenQuad();
 
     if (ImGui::BeginMainMenuBar())
     {

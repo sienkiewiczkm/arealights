@@ -21,11 +21,13 @@ public:
     void setCamera(std::shared_ptr<fw::FreeCamera> camera);
 
     void update(const std::chrono::high_resolution_clock::duration& deltaTime);
+    bool hadMovement() const { return _hadMovement; }
 
 private:
     std::shared_ptr<fw::FreeCamera> _camera;
     std::shared_ptr<fw::IKeyboardInput> _keyboardInput;
     std::shared_ptr<fw::IMouseInput> _mouseInput;
+    bool _hadMovement;
 };
 
 }

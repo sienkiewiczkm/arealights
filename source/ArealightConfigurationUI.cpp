@@ -28,10 +28,11 @@ void ArealightConfigurationUI::update()
         const char* arealightMethods[] = {
             "Debug view",
             "Linearly Transformed Cosines",
-            "Point light cluster"
+            "Point light cluster",
+            "GTR Ground Truth"
         };
 
-        ImGui::Combo("Method", &_selectedArealightMethod, arealightMethods, 3);
+        ImGui::Combo("Method", &_selectedArealightMethod, arealightMethods, 4);
 
         const char* arealightTypes[] = { "Quad" };
         int selectedItem = 0;

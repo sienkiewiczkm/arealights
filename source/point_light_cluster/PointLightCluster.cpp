@@ -55,8 +55,8 @@ void PointLightCluster::render()
         return;
     }
 
-    glClearColor(0, 0, 0, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    //glClearColor(0, 0, 0, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT);
 
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);

@@ -8,7 +8,7 @@
 namespace arealights
 {
 
-FreeCameraInputMapper::FreeCameraInputMapper()
+FreeCameraInputMapper::FreeCameraInputMapper(): _hadMovement{false}
 {
 }
 
@@ -39,6 +39,8 @@ void FreeCameraInputMapper::update(
 {
     auto deltaTimeSeconds = std::chrono::duration<float>(deltaTime);
 
+    _hadMovement = false;
+
     if (!_camera)
     {
         return;
@@ -51,21 +53,25 @@ void FreeCameraInputMapper::update(
         if (_keyboardInput->isKeyDown(GLFW_KEY_W))
         {
             movement.z += 1.0f;
+            _hadMovement = true;
         }
 
         if (_keyboardInput->isKeyDown(GLFW_KEY_S))
         {
             movement.z -= 1.0f;
+            _hadMovement = true;
         }
 
         if (_keyboardInput->isKeyDown(GLFW_KEY_A))
         {
             movement.x -= 1.0f;
+            _hadMovement = true;
         }
 
         if (_keyboardInput->isKeyDown(GLFW_KEY_D))
         {
             movement.x += 1.0f;
+            _hadMovement = true;
         }
 
         _camera->moveRelatively(deltaTimeSeconds.count() * movement);
@@ -76,6 +82,7 @@ void FreeCameraInputMapper::update(
         auto movement = _mouseInput->getMovement();
         movement *= deltaTimeSeconds.count();
         _camera->rotate(movement.x, movement.y);
+        _hadMovement = true;
     }
 }
 
