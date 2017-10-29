@@ -3,7 +3,7 @@
 
 #version 330 core
 
-#define NUM_SAMPLES_PER_FRAME 16
+#define NUM_SAMPLES_PER_FRAME 128
 
 out vec4 FragColor;
 in vec2 fsTexCoords;
@@ -31,7 +31,7 @@ bool quad_ray_intersection(vec3 q[4], vec3 pos, vec3 dir, out vec2 uv)
     xaxis = xaxis / xlen;
     yaxis = yaxis / ylen;
 
-    vec3 zaxis = normalize(cross(xaxis, yaxis));
+    vec3 zaxis = -normalize(cross(xaxis, yaxis));
 
     // If looking direction and arealight "direction" is perpendicular we assume there is no intersection,
     // instead of taking line on rectangle.
@@ -162,10 +162,12 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness, vec2
     float NdotV = max(dot(normal, viewDir), 0.0);
     float NdotL = max(dot(normal, lightDir), 0.0);
 
+    float alpha = roughness * roughness;
+
     vec3 halfwayDir = normalize(viewDir + lightDir);
-    float D = distribution_ggx_tr(normal, halfwayDir, roughness);
+    float D = distribution_ggx_tr(normal, halfwayDir, alpha);
     vec3 F = fresnel_schlick(max(dot(halfwayDir, viewDir), 0.0), F0);
-    float G = geometry_smith(normal, viewDir, lightDir, roughness);
+    float G = geometry_smith(normal, viewDir, lightDir, alpha);
 
     vec3 BRDF = (D * F * G) / (4.0 * NdotV * NdotL + 0.001);
 
@@ -208,11 +210,9 @@ void main()
         }
 
         // TODO: Remove magnification of result. There is something wrong.
-        accumulator *= 200.0f;
+        accumulator *= 100.0f;
 
         FragColor = vec4(accumulator / NUM_SAMPLES_PER_FRAME, 1.0);
-
-
     }
     else
     {

@@ -36,8 +36,11 @@ namespace arealights {
 
         for (auto i = 0; i < 2; ++i) {
             for (auto j = 0; j < 2; ++j) {
-                float x = j - 0.5f;
-                float y = j == 0 ? i - 0.5f : -(i - 0.5f);
+                float x = (i == 0) ? j : (1-j);
+                float y = i;
+
+                x -= 0.5f;
+                y -= 0.5f;
 
                 glm::vec4 pointLightPosition{x, y, 0.0f, 1.0f};
                 auto worldLightPosition = _lights[0].transformation * pointLightPosition;
@@ -47,10 +50,10 @@ namespace arealights {
             }
         }
 
-        const int numSamplesPerFrame = 1;
+        const int numSamplesPerFrame = 128;
         int numSamplesAlreadyCalculated = numSamplesPerFrame * _numRender;
         int totalSamplesAfterFrame = numSamplesAlreadyCalculated + numSamplesPerFrame;
-        float sourceFactor = static_cast<float>(1) / totalSamplesAfterFrame;
+        float sourceFactor = static_cast<float>(numSamplesPerFrame) / totalSamplesAfterFrame;
 
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
@@ -66,8 +69,8 @@ namespace arealights {
         _shader->setUniform("PositionTexture", 2);
 
         std::vector<glm::vec2> randomParametersForSamples;
-        for (int i = 0; i < 16; ++i) {
-            randomParametersForSamples.push_back(halton2d(8*_numRender+i));
+        for (int i = 0; i < numSamplesPerFrame; ++i) {
+            randomParametersForSamples.push_back(halton2d(numSamplesPerFrame*_numRender+i));
         }
 
         auto shaderId = _shader->getId();
