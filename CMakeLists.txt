@@ -7,11 +7,11 @@ set(AREALIGHTS_RESOURCES_DIR ${PROJECT_SOURCE_DIR}/assets CACHE PATH "")
 
 find_package(OpenGL REQUIRED)
 
-find_package(glfw3 3.3)
+find_package(glfw3 3.2)
 if (glfw3_FOUND)
-  message("GLFW 3.3 found successfully in ${glfw3_DIR}.")
+  message("GLFW 3.2 found successfully in ${glfw3_DIR}.")
 else ()
-  message("GLFW 3.3 not found. Library will be compiled from sources.")
+  message("GLFW 3.2 not found. Library will be compiled from sources.")
 
   if (WIN32)
     set(GLFW_ADDITIONAL_DEFINITIONS "${GLFW_ADDITIONAL_DEFINITIONS} GLFW_EXPOSE_NATIVE_WIN32")
@@ -82,7 +82,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${ADDITIONAL_DEFINITIONS})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_gl_LIBRARY} assimp glfw)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_gl_LIBRARY} glfw)
 
 set(PROJECT_COMPILE_FEATURES ${PROJECT_COMPILE_FEATURES} cxx_std_14 cxx_auto_type cxx_nullptr cxx_range_for)
 target_compile_features(${PROJECT_NAME} PUBLIC ${PROJECT_COMPILE_FEATURES})
