@@ -16,6 +16,7 @@ struct GBufferData {
     vec3 normal;
     vec3 albedo;
     float roughness;
+    float metalness;
     float materialID;
 };
 
@@ -29,6 +30,7 @@ GBufferData getGbufferData(vec2 fsTexCoords) {
     data.normal = normalize(gbufferB.xyz);
     data.albedo = gbufferC.rgb;
     data.roughness = gbufferB.a;
+    data.metalness = gbufferA.a;
     data.materialID = gbufferC.a;
 
     return data;
@@ -36,7 +38,7 @@ GBufferData getGbufferData(vec2 fsTexCoords) {
 
 GBufferPackedData packGbuffer(GBufferData gbuffer) {
     GBufferPackedData data;
-    data.a = vec4(gbuffer.position, 0);
+    data.a = vec4(gbuffer.position, gbuffer.metalness);
     data.b = vec4(gbuffer.normal, gbuffer.roughness);
     data.c = vec4(gbuffer.albedo, gbuffer.materialID);
     return data;

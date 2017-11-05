@@ -27,7 +27,7 @@ uniform sampler2D RoughnessTexture;
 uniform int SolidMode;
 uniform float RoughnessConst;
 
-float textureScale = 8.0f;
+float textureScale = 12.0f;
 
 vec3 toLinear(vec3 color) {
   return pow(color, vec3(2.2));
@@ -38,6 +38,7 @@ void main()
     GBufferData gbuffer;
     gbuffer.position = fsPosition;
     gbuffer.albedo = vec3(1);
+    gbuffer.metalness = 0;
     gbuffer.roughness = RoughnessConst;
     gbuffer.normal = fsNormal;
     gbuffer.materialID = MaterialID;
@@ -56,6 +57,7 @@ void main()
 
       gbuffer.albedo = toLinear(texture(AlbedoTexture, texCoord).rgb);
       gbuffer.roughness = texture(RoughnessTexture, texCoord).r;
+      gbuffer.metalness = texture(MetalnessTexture, texCoord).r;
       gbuffer.normal = normalize(tbn * tbnNormal);
     }
 

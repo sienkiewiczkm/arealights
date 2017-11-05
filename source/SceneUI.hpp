@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <vector>
+#include <string>
+
 namespace arealights
 {
 
@@ -14,6 +17,9 @@ public:
 
     void update();
 
+    void setMaterials(std::vector<std::string> materialNames) { _materialNames = materialNames; }
+    int getMaterialId() { return _activeMaterial; }
+
     int getSceneId() { return _sceneRadio; }
     float getRoughness() { return _roughness; }
 
@@ -21,6 +27,9 @@ private:
     bool _showUI;
     int _sceneRadio;
     float _roughness;
+    int _activeMaterial;
+
+    std::vector<std::string> _materialNames;
 };
 
 }

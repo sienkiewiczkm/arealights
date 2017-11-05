@@ -12,7 +12,8 @@ namespace arealights
 {
 
 Application::Application():
-    _restartIncrementalRendering{false}
+    _restartIncrementalRendering{false},
+    _activeMaterial{0}
 {
 }
 
@@ -81,21 +82,27 @@ void Application::onCreate()
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
     LOG(INFO) << "Max texture units: " << maxTextureUnits;
 
-    _woodAlbedoTexture = std::make_unique<fw::Texture>(
-        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_basecolor.png"
-    );
+    _scuffedIronMaterial = std::make_shared<Material>();
+    _scuffedIronMaterial->setAlbedoTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_basecolor.png");
+    _scuffedIronMaterial->setNormalTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_normal.png");
+    _scuffedIronMaterial->setMetalnessTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_metallic.png");
+    _scuffedIronMaterial->setRoughnessTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_roughness.png");
 
-    _woodNormalTexture = std::make_unique<fw::Texture>(
-        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_normal.png"
-    );
+    _woodPlanksMaterial = std::make_shared<Material>();
+    _woodPlanksMaterial->setAlbedoTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_basecolor.png");
+    _woodPlanksMaterial->setNormalTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_normal.png");
+    _woodPlanksMaterial->setRoughnessTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_roughness.png");
+    _woodPlanksMaterial->setMetalnessTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_metalness.png");
 
-    _woodMetalnessTexture = std::make_unique<fw::Texture>(
-        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_metalness.png"
-    );
+    _copperRockMaterial = std::make_shared<Material>();
+    _copperRockMaterial->setAlbedoTexture("../assets/textures/copper-rock/copper-rock1-alb.png");
+    _copperRockMaterial->setNormalTexture("../assets/textures/copper-rock/copper-rock1-normal.png");
+    _copperRockMaterial->setMetalnessTexture("../assets/textures/copper-rock/copper-rock1-metal.png");
+    _copperRockMaterial->setRoughnessTexture("../assets/textures/copper-rock/copper-rock1-rough.png");
 
-    _woodRoughnessTexture = std::make_unique<fw::Texture>(
-        "../assets/textures/WoodPlankFlooring/sculptedfloorboards4_roughness.png"
-    );
+    _materialMap.push_back({"Scuffed Iron", _scuffedIronMaterial});
+    _materialMap.push_back({"Wooden Planks", _woodPlanksMaterial});
+    _materialMap.push_back({"Copper infused rock", _copperRockMaterial});
 
     {
         glGenFramebuffers(1, &_intermediateFBO);
@@ -160,6 +167,11 @@ void Application::onUpdate(
         _plcConfigurationUI.update();
     }
 
+    std::vector<std::string> materialNames;
+    std::transform(std::begin(_materialMap), std::end(_materialMap), std::back_inserter(materialNames),
+        [](const std::pair<std::string, std::shared_ptr<Material>> &p) { return p.first; });
+
+    _sceneUI.setMaterials(materialNames);
     _sceneUI.update();
 }
 
@@ -180,15 +192,7 @@ void Application::onRender()
     _deferredPipeline->setProjectionMatrix(projMatrix);
     _deferredPipeline->setMaterialID(0.1f);
 
-    _deferredPipeline->getShader()->setUniform("AlbedoTexture", 0);
-    _deferredPipeline->getShader()->setUniform("NormalTexture", 1);
-    _deferredPipeline->getShader()->setUniform("MetalnessTexture", 2);
-    _deferredPipeline->getShader()->setUniform("RoughnessTexture", 3);
-
-    _woodAlbedoTexture->bind(0);
-    _woodNormalTexture->bind(1);
-    _woodMetalnessTexture->bind(2);
-    _woodRoughnessTexture->bind(3);
+    _materialMap[_sceneUI.getMaterialId()].second->bind();
 
     _deferredPipeline->getShader()->setUniform("SolidMode", _sceneUI.getSceneId());
     _deferredPipeline->getShader()->setUniform("RoughnessConst", _sceneUI.getRoughness());

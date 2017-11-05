@@ -19,6 +19,7 @@
 #include "point_light_cluster/PLCConfigurationUI.hpp"
 #include "point_light_cluster/PointLightCluster.hpp"
 #include "ground_truth/GroundTruth.hpp"
+#include "Material.hpp"
 #include <memory>
 
 namespace arealights
@@ -72,10 +73,13 @@ private:
     std::shared_ptr<LinearlyTransformedCosines> _ltc;
     std::shared_ptr<GroundTruth> _groundTruth;
 
-    std::unique_ptr<fw::Texture> _woodAlbedoTexture;
-    std::unique_ptr<fw::Texture> _woodNormalTexture;
-    std::unique_ptr<fw::Texture> _woodMetalnessTexture;
-    std::unique_ptr<fw::Texture> _woodRoughnessTexture;
+    std::shared_ptr<Material> _scuffedIronMaterial;
+    std::shared_ptr<Material> _copperRockMaterial;
+    std::shared_ptr<Material> _woodPlanksMaterial;
+
+    int _activeMaterial;
+    std::vector<std::pair<std::string, std::shared_ptr<Material>>> _materialMap;
+
     PLCConfigurationUI _plcConfigurationUI;
 
     bool _restartIncrementalRendering;
