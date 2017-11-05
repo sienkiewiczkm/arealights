@@ -2,15 +2,15 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #version 330 core
+#extension GL_ARB_shading_language_include : require
+
+#include "/gbuffer.glsl"
+#include "/cookTorrance.glsl"
 
 #define NUM_SAMPLES_PER_FRAME 128
 
 out vec4 FragColor;
 in vec2 fsTexCoords;
-
-uniform sampler2D TargetTexture;
-uniform sampler2D PositionTexture;
-uniform sampler2D NormalTexture;
 
 uniform vec3 LightColor;
 uniform vec3 RectangularArealight[4];
@@ -76,40 +76,6 @@ bool quad_ray_intersection(vec3 q[4], vec3 pos, vec3 dir, out vec2 uv)
     }
 
     return true;
-}
-
-float distribution_ggx_tr(vec3 N, vec3 H, float a)
-{
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotHSq = NdotH * NdotH;
-
-    float nom = a2;
-    float denom = (NdotHSq * (a2 - 1.0) + 1);
-    denom = pi * denom * denom;
-
-    return nom / denom;
-}
-
-vec3 fresnel_schlick(float cosTheta, vec3 F0)
-{
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-}
-
-float geometry_schlick_ggx(float NdotV, float k)
-{
-    float nom = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-    return nom / denom;
-}
-
-float geometry_smith(vec3 N, vec3 V, vec3 L, float k)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = geometry_schlick_ggx(NdotV, k);
-    float ggx2 = geometry_schlick_ggx(NdotL, k);
-    return ggx1 * ggx2;
 }
 
 float attenuation(
@@ -184,29 +150,26 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness, vec2
 
 void main()
 {
-    vec4 gbufferA = texture(PositionTexture, fsTexCoords);
-    vec4 gbufferB = texture(NormalTexture, fsTexCoords);
-    vec4 gbufferC = texture(TargetTexture, fsTexCoords);
+    GBufferData gbuffer = getGbufferData(fsTexCoords);
 
-    float materialID = gbufferC.a;
-
-    if (materialID > 0.99)
+    if (gbuffer.materialID > 0.99)
     {
         FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 
-    vec3 position = gbufferA.xyz;
-    vec3 normal = normalize(gbufferB.xyz);
-    vec3 albedo = gbufferC.rgb;
-    float roughness = gbufferB.a;
-
-    if (materialID < 0.15)
+    if (gbuffer.materialID < 0.15)
     {
         vec3 accumulator = vec3(0);
         for (int i = 0; i < NUM_SAMPLES_PER_FRAME; ++i) {
             vec2 randomParameters = RandomParameters[i];
-            accumulator += shadeSurface(position, normal, albedo, roughness, randomParameters);
+            accumulator += shadeSurface(
+                gbuffer.position,
+                gbuffer.normal,
+                gbuffer.albedo,
+                gbuffer.roughness,
+                randomParameters
+            );
         }
 
         // TODO: Remove magnification of result. There is something wrong.

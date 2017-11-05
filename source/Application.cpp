@@ -6,6 +6,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
 #include "point_light_cluster/PointLightCluster.hpp"
+#include "framework/Common.hpp"
 
 namespace arealights
 {
@@ -22,6 +23,9 @@ Application::~Application()
 void Application::onCreate()
 {
     ImGuiApplication::onCreate();
+
+    preloadShaderInclude("../assets/shaderlib/gbuffer.glsl", "/gbuffer.glsl");
+    preloadShaderInclude("../assets/shaderlib/cookTorrance.glsl", "/cookTorrance.glsl");
 
     _renderHelper = std::make_shared<RenderHelper>(this);
 
@@ -45,18 +49,18 @@ void Application::onCreate()
     );
 
     _shaderProgram = _renderHelper->makeSimpleShader(
-        "../assets/DebugShader.vs",
-        "../assets/DebugShader.fs"
+        "../assets/DebugShader.vs.glsl",
+        "../assets/DebugShader.fs.glsl"
     );
 
     _textureBlitShader = _renderHelper->makeSimpleShader(
-        "../assets/TextureBlit.vs",
-        "../assets/TextureBlit.fs"
+        "../assets/TextureBlit.vs.glsl",
+        "../assets/TextureBlit.fs.glsl"
     );
 
     _clusteringShader = _renderHelper->makeSimpleShader(
-        "../assets/Clustering.vs",
-        "../assets/Clustering.fs"
+        "../assets/Clustering.vs.glsl",
+        "../assets/Clustering.fs.glsl"
     );
 
     _camera = std::make_shared<fw::FreeCamera>();
@@ -115,6 +119,19 @@ void Application::onCreate()
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+}
+
+void Application::preloadShaderInclude(const char *filepath, std::string glslIncludePath) const
+{
+    auto cookTorranceShader = fw::loadASCIITextFile(filepath);
+    glNamedStringARB(GL_SHADER_INCLUDE_ARB, glslIncludePath.size(), glslIncludePath.c_str(),
+     cookTorranceShader.size(), cookTorranceShader.c_str());
+
+    GLenum err;
+    while((err = glGetError()) != GL_NO_ERROR)
+    {
+        LOG(ERROR) << err;
     }
 }
 
@@ -347,9 +364,9 @@ void Application::renderClusters()
 {
     _clusteringShader->use();
 
-    _clusteringShader->setUniform("TargetTexture", 0);
-    _clusteringShader->setUniform("NormalTexture", 1);
-    _clusteringShader->setUniform("PositionTexture", 2);
+    _clusteringShader->setUniform("GBufferC", 0);
+    _clusteringShader->setUniform("GBufferB", 1);
+    _clusteringShader->setUniform("GBufferA", 2);
 
     _renderHelper->drawFullScreenQuad();
 }

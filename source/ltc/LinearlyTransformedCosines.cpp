@@ -21,8 +21,8 @@ LinearlyTransformedCosines::~LinearlyTransformedCosines()
 void LinearlyTransformedCosines::init()
 {
     _ltcShader = _renderHelper->makeSimpleShader(
-        "../assets/LTC.vs",
-        "../assets/LTC.fs"
+        "../assets/LTC.vs.glsl",
+        "../assets/LTC.fs.glsl"
     );
 
     loadLookupTextures();
@@ -47,9 +47,10 @@ void LinearlyTransformedCosines::render()
 
     _ltcShader->use();
 
-    _ltcShader->setUniform("TargetTexture", 0);
-    _ltcShader->setUniform("NormalTexture", 1);
-    _ltcShader->setUniform("PositionTexture", 2);
+    _ltcShader->setUniform("GBufferC", 0);
+    _ltcShader->setUniform("GBufferB", 1);
+    _ltcShader->setUniform("GBufferA", 2);
+
     _ltcShader->setUniform("LTCLookupA", 3);
     _ltcShader->setUniform("LTCLookupB", 4);
 

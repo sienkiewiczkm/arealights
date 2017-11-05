@@ -79,6 +79,8 @@ private:
     PLCConfigurationUI _plcConfigurationUI;
 
     bool _restartIncrementalRendering;
+
+    void preloadShaderInclude(const char *filepath, std::string glslIncludePath) const;
 };
 
 }

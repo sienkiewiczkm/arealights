@@ -8,16 +8,15 @@
 //  Project page: https://eheitzresearch.wordpress.com/415-2/
 
 #version 330 core
+#extension GL_ARB_shading_language_include : require
+
+#include "/gbuffer.glsl"
 
 out vec4 FragColor;
 
 in vec2 fsTexCoords;
 
 uniform mat4 viewMatrix;
-
-uniform sampler2D TargetTexture;
-uniform sampler2D PositionTexture;
-uniform sampler2D NormalTexture;
 
 uniform sampler2D LTCLookupA;
 uniform sampler2D LTCLookupB;
@@ -27,6 +26,8 @@ uniform mat4 arealightTransform;
 const float LUT_SIZE = 64.0;
 const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
 const float LUT_BIAS = 0.5/LUT_SIZE;
+
+const float pi = 3.1415926535897932384626433832795;
 
 float IntegrateEdge(vec3 v1, vec3 v2)
 {
@@ -199,8 +200,6 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
     return Lo_i;
 }
 
-const float pi = 3.14159265;
-
 vec3 toLinear(vec3 color) {
   return pow(color, vec3(2.2));
 }
@@ -251,26 +250,17 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 
 void main()
 {
-    vec4 gbufferA = texture(PositionTexture, fsTexCoords);
-    vec4 gbufferB = texture(NormalTexture, fsTexCoords);
-    vec4 gbufferC = texture(TargetTexture, fsTexCoords);
+    GBufferData gbuffer = getGbufferData(fsTexCoords);
 
-    float materialID = gbufferC.a;
-
-    if (materialID > 0.99)
+    if (gbuffer.materialID > 0.99)
     {
         FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 
-    vec3 position = gbufferA.xyz;
-    vec3 normal = normalize(gbufferB.xyz);
-    vec3 albedo = gbufferC.rgb;
-    float roughness = gbufferB.a;
-
-    if (materialID < 0.15)
+    if (gbuffer.materialID < 0.15)
     {
-        vec3 surfaceColor = shadeSurface(position, normal, albedo, roughness);
+        vec3 surfaceColor = shadeSurface(gbuffer.position, gbuffer.normal, gbuffer.albedo, gbuffer.roughness);
         surfaceColor = toSRGB(surfaceColor);
         FragColor = vec4(surfaceColor, 1.0);
     }

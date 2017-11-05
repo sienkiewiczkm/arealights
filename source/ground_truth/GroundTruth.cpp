@@ -64,9 +64,9 @@ namespace arealights {
 
         _shader->use();
 
-        _shader->setUniform("TargetTexture", 0);
-        _shader->setUniform("NormalTexture", 1);
-        _shader->setUniform("PositionTexture", 2);
+        _shader->setUniform("GBufferC", 0);
+        _shader->setUniform("GBufferB", 1);
+        _shader->setUniform("GBufferA", 2);
 
         std::vector<glm::vec2> randomParametersForSamples;
         for (int i = 0; i < numSamplesPerFrame; ++i) {

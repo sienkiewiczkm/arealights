@@ -38,13 +38,13 @@ void PointLightCluster::setLights(std::vector<PolygonalLight> lights)
 void PointLightCluster::init()
 {
     _shader = _renderHelper->makeSimpleShader(
-        "../assets/PointLightCluster.vs",
-        "../assets/PointLightCluster.fs"
+        "../assets/PointLightCluster.vs.glsl",
+        "../assets/PointLightCluster.fs.glsl"
     );
 
     _sphereLightVolumeShader = _renderHelper->makeSimpleShader(
-        "../assets/SphereLightVolume.vs",
-        "../assets/SphereLightVolume.fs"
+        "../assets/SphereLightVolume.vs.glsl",
+        "../assets/SphereLightVolume.fs.glsl"
     );
 }
 
@@ -123,9 +123,9 @@ void PointLightCluster::render()
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
         _shader->use();
-        _shader->setUniform("TargetTexture", 0);
-        _shader->setUniform("NormalTexture", 1);
-        _shader->setUniform("PositionTexture", 2);
+        _shader->setUniform("GBufferC", 0);
+        _shader->setUniform("GBufferB", 1);
+        _shader->setUniform("GBufferA", 2);
 
         _shader->setUniform("NumPointLights", _clusterSize.x * _clusterSize.y);
         _shader->setUniform("LightViewPosition", lightViewPosition);

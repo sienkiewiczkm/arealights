@@ -63,11 +63,11 @@ void DeferredRenderingPipeline::create(glm::ivec2 resolution)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     fw::Shader vertexShader;
-    vertexShader.addSourceFromFile("../assets/DeferredGeometryPass.vs");
+    vertexShader.addSourceFromFile("../assets/GeometryPass.vs.glsl");
     vertexShader.compile(GL_VERTEX_SHADER);
 
     fw::Shader fragmentShader;
-    fragmentShader.addSourceFromFile("../assets/DeferredGeometryPass.fs");
+    fragmentShader.addSourceFromFile("../assets/GeometryPass.fs.glsl");
     fragmentShader.compile(GL_FRAGMENT_SHADER);
 
     _geometryPassShader = std::make_shared<fw::ShaderProgram>();

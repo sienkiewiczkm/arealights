@@ -2,6 +2,9 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #version 330 core
+#extension GL_ARB_shading_language_include : require
+
+#include "/gbuffer.glsl"
 
 in vec3 fsPosition;
 in vec3 fsNormal;
@@ -32,9 +35,12 @@ vec3 toLinear(vec3 color) {
 
 void main()
 {
-    vec3 albedo = vec3(1);
-    float roughness = RoughnessConst;
-    vec3 normal = fsNormal;
+    GBufferData gbuffer;
+    gbuffer.position = fsPosition;
+    gbuffer.albedo = vec3(1);
+    gbuffer.roughness = RoughnessConst;
+    gbuffer.normal = fsNormal;
+    gbuffer.materialID = MaterialID;
 
     // todo: remove this ugly branch
     if (SolidMode == 1)
@@ -48,12 +54,13 @@ void main()
       vec2 texCoord = fsTexCoord * textureScale;
       vec3 tbnNormal = normalize(texture(NormalTexture, texCoord).rgb*2.0-1.0);
 
-      albedo = toLinear(texture(AlbedoTexture, texCoord).rgb);
-      roughness = texture(RoughnessTexture, texCoord).r;
-      normal = normalize(tbn * tbnNormal);
+      gbuffer.albedo = toLinear(texture(AlbedoTexture, texCoord).rgb);
+      gbuffer.roughness = texture(RoughnessTexture, texCoord).r;
+      gbuffer.normal = normalize(tbn * tbnNormal);
     }
 
-    gPosition = vec4(fsPosition, 0);
-    gColor = vec4(albedo, MaterialID);
-    gNormal = vec4(normal, roughness);
+    GBufferPackedData data = packGbuffer(gbuffer);
+    gPosition = data.a;
+    gNormal = data.b;
+    gColor = data.c;
 }
