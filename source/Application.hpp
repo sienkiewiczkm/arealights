@@ -49,7 +49,7 @@ private:
     std::shared_ptr<RenderHelper> _renderHelper;
 
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
-    std::unique_ptr<fw::ShaderProgram> _textureBlitShader;
+    std::unique_ptr<fw::ShaderProgram> _blitSRGBProgram;
     std::unique_ptr<fw::ShaderProgram> _clusteringShader;
 
     std::unique_ptr<fw::Mesh<fw::StandardVertex3D>> _planeMesh;

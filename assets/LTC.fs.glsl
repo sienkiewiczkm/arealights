@@ -204,10 +204,6 @@ vec3 toLinear(vec3 color) {
   return pow(color, vec3(2.2));
 }
 
-vec3 toSRGB(vec3 color) {
-  return pow(color, vec3(1.0/2.2));
-}
-
 vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 {
   vec3 points[4];
@@ -261,7 +257,6 @@ void main()
     if (gbuffer.materialID < 0.15)
     {
         vec3 surfaceColor = shadeSurface(gbuffer.position, gbuffer.normal, gbuffer.albedo, gbuffer.roughness);
-        surfaceColor = toSRGB(surfaceColor);
         FragColor = vec4(surfaceColor, 1.0);
     }
     else

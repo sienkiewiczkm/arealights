@@ -54,9 +54,9 @@ void Application::onCreate()
         "../assets/DebugShader.fs.glsl"
     );
 
-    _textureBlitShader = _renderHelper->makeSimpleShader(
-        "../assets/TextureBlit.vs.glsl",
-        "../assets/TextureBlit.fs.glsl"
+    _blitSRGBProgram = _renderHelper->makeSimpleShader(
+        "../assets/TextureBlitToSRGB.vs.glsl",
+        "../assets/TextureBlitToSRGB.fs.glsl"
     );
 
     _clusteringShader = _renderHelper->makeSimpleShader(
@@ -300,11 +300,11 @@ void Application::onRender()
     glClearColor(0.007f, 0.11f, 0.15f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    _textureBlitShader->use();
+    _blitSRGBProgram->use();
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _intermediateFBOTexture);
-    _textureBlitShader->setUniform("TargetTexture", 0);
+    _blitSRGBProgram->setUniform("TargetTexture", 0);
 
     _renderHelper->drawFullScreenQuad();
 
