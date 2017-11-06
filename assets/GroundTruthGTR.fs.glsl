@@ -92,7 +92,7 @@ float attenuation(
     return 1 / attenuationDenominator;
 }
 
-vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness, vec2 randomParameters)
+vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, float roughness, vec2 randomParameters)
 {
     float phi = randomParameters.x * (2.0 * pi);
     float theta = randomParameters.y * (0.5 * pi);
@@ -121,9 +121,8 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness, vec2
     vec3 viewDir = normalize(-position);
     float lightDist = length(lightVec);
 
-    vec3 radiance = vec3(1,1,1) * attenuation(1, 0.7, 1.8, lightDist);
+    vec3 radiance = vec3(1,1,1);
 
-    float metalness = 0.0;
     vec3 F0 = mix(vec3(0.04), albedo, metalness);
     float NdotV = max(dot(normal, viewDir), 0.0);
     float NdotL = max(dot(normal, lightDir), 0.0);
@@ -167,6 +166,7 @@ void main()
                 gbuffer.position,
                 gbuffer.normal,
                 gbuffer.albedo,
+                gbuffer.metalness,
                 gbuffer.roughness,
                 randomParameters
             );

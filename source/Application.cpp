@@ -195,6 +195,7 @@ void Application::onRender()
     _materialMap[_sceneUI.getMaterialId()].second->bind();
 
     _deferredPipeline->getShader()->setUniform("SolidMode", _sceneUI.getSceneId());
+    _deferredPipeline->getShader()->setUniform("MetalnessConst", _sceneUI.getMetalness());
     _deferredPipeline->getShader()->setUniform("RoughnessConst", _sceneUI.getRoughness());
 
     _planeMesh->render();

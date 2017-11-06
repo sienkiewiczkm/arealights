@@ -25,6 +25,7 @@ uniform sampler2D MetalnessTexture;
 uniform sampler2D RoughnessTexture;
 
 uniform int SolidMode;
+uniform float MetalnessConst;
 uniform float RoughnessConst;
 
 float textureScale = 12.0f;
@@ -38,7 +39,7 @@ void main()
     GBufferData gbuffer;
     gbuffer.position = fsPosition;
     gbuffer.albedo = vec3(1);
-    gbuffer.metalness = 0;
+    gbuffer.metalness = MetalnessConst;
     gbuffer.roughness = RoughnessConst;
     gbuffer.normal = fsNormal;
     gbuffer.materialID = MaterialID;

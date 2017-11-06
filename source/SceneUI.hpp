@@ -21,11 +21,13 @@ public:
     int getMaterialId() { return _activeMaterial; }
 
     int getSceneId() { return _sceneRadio; }
+    float getMetalness() { return _metalness; }
     float getRoughness() { return _roughness; }
 
 private:
     bool _showUI;
     int _sceneRadio;
+    float _metalness;
     float _roughness;
     int _activeMaterial;
 

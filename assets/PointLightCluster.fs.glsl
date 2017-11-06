@@ -34,7 +34,7 @@ float attenuation(
 }
 
 
-vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
+vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, float roughness)
 {
     vec3 lightVec = LightViewPosition - position;
     vec3 lightDir = normalize(lightVec);
@@ -43,7 +43,6 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 
     vec3 radiance = vec3(1,1,1) * attenuation(1, 0.7, 1.8, lightDist);
 
-    float metalness = 0.0;
     vec3 F0 = mix(vec3(0.04), albedo, metalness);
     float NdotV = max(dot(normal, viewDir), 0.0);
     float NdotL = max(dot(normal, lightDir), 0.0);
@@ -63,7 +62,8 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 
     float lightInfluence = clamp(dot(LightViewNormal, -lightDir), 0, 1);
     Lo *= lightInfluence;
-    //Lo /= NumPointLights;
+
+    Lo /= NumPointLights;
 
     return vec3(Lo);
 }
@@ -85,6 +85,7 @@ void main()
                 gbuffer.position,
                 gbuffer.normal,
                 gbuffer.albedo,
+                gbuffer.metalness,
                 gbuffer.roughness
             ),
             1.0

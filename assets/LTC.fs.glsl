@@ -204,7 +204,7 @@ vec3 toLinear(vec3 color) {
   return pow(color, vec3(2.2));
 }
 
-vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
+vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, float roughness)
 {
   vec3 points[4];
   float hw = 0.5*1.0;
@@ -233,13 +233,13 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float roughness)
 
   vec3 diff = LTC_Evaluate(normal, viewDir, position, mat3(1), points, false);
 
-  vec3 specularColor = vec3(0.25);
-  vec3 lightColor = vec3(2);
+  vec3 specularColor = vec3(1);
+  vec3 lightColor = vec3(1);
 
   vec3 spec = LTC_Evaluate(normal, viewDir, position, Minv, points, false);
   spec *= specularColor * ltcMagnitude + (1 - specularColor) * ltcFresnel;
 
-  vec3 color = lightColor * (spec + albedo * diff);
+  vec3 color = lightColor * (spec*metalness + (1-metalness) * albedo * diff);
 
   return color;
 }
@@ -256,7 +256,14 @@ void main()
 
     if (gbuffer.materialID < 0.15)
     {
-        vec3 surfaceColor = shadeSurface(gbuffer.position, gbuffer.normal, gbuffer.albedo, gbuffer.roughness);
+        vec3 surfaceColor = shadeSurface(
+            gbuffer.position,
+            gbuffer.normal,
+            gbuffer.albedo,
+            gbuffer.metalness,
+            gbuffer.roughness
+        );
+
         FragColor = vec4(surfaceColor, 1.0);
     }
     else
