@@ -142,7 +142,7 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
 
     vec3 Lo = (kD * albedo / pi + BRDF) * radiance * NdotL;
 
-    Lo *= cos(theta) * sin(theta);
+    Lo *= sin(theta);
 
     return vec3(Lo);
 }
@@ -173,7 +173,7 @@ void main()
         }
 
         // TODO: Remove magnification of result. There is something wrong.
-        accumulator *= 100.0f;
+        accumulator *= 10.0f;
 
         FragColor = vec4(accumulator / NUM_SAMPLES_PER_FRAME, 1.0);
     }
