@@ -37,36 +37,72 @@ set(AREALIGHTS_DEPENDENCIES_SOURCE_FILES
 
 set(AREALIGHTS_SOURCE_FILES
   source/Application.cpp
+  source/Application.hpp
   source/ArealightConfigurationUI.cpp
+  source/ArealightConfigurationUI.hpp
   source/DeferredRenderingPipeline.cpp
+  source/DeferredRenderingPipeline.hpp
   source/FreeCameraInputMapper.cpp
+  source/FreeCameraInputMapper.hpp
   source/Main.cpp
+  source/Material.cpp
+  source/Material.hpp
+  source/PolygonalLight.hpp
   source/RenderHelper.cpp
+  source/RenderHelper.hpp
   source/SceneUI.cpp
+  source/SceneUI.hpp
+  source/framework/BasicMeshes.cpp
+  source/framework/BasicMeshes.hpp
   source/framework/Common.cpp
+  source/framework/Common.hpp
   source/framework/Effect.cpp
+  source/framework/Effect.hpp
   source/framework/Framework.cpp
+  source/framework/Framework.hpp
   source/framework/FreeCamera.cpp
+  source/framework/FreeCamera.hpp
   source/framework/ImGuiApplication.cpp
+  source/framework/ImGuiApplication.hpp
   source/framework/ImGuiBinding.cpp
+  source/framework/ImGuiBinding.hpp
   source/framework/ImGuiExtensions.cpp
+  source/framework/ImGuiExtensions.hpp
+  source/framework/Logging.hpp
+  source/framework/Mesh.hpp
+  source/framework/OpenGL.hpp
   source/framework/OpenGLApplication.cpp
+  source/framework/OpenGLApplication.hpp
   source/framework/OrbitingCamera.cpp
+  source/framework/OrbitingCamera.hpp
   source/framework/Shaders.cpp
+  source/framework/Shaders.hpp
   source/framework/StbImplementation.c
   source/framework/Texture.cpp
+  source/framework/Texture.hpp
   source/framework/TextureUtils.cpp
+  source/framework/TextureUtils.hpp
   source/framework/Vertices.cpp
+  source/framework/Vertices.hpp
+  source/framework/common/Exceptions.hpp
   source/framework/common/StreamUtils.cpp
+  source/framework/common/StreamUtils.hpp
   source/framework/inputs/GenericKeyboardInput.cpp
+  source/framework/inputs/GenericKeyboardInput.hpp
   source/framework/inputs/GenericMouseInput.cpp
+  source/framework/inputs/GenericMouseInput.hpp
+  source/framework/inputs/IKeyboardInput.hpp
+  source/framework/inputs/IMouseInput.hpp
+  source/framework/inputs/InputStates.hpp
   source/ground_truth/GroundTruth.cpp
   source/ground_truth/GroundTruth.hpp
   source/ltc/LinearlyTransformedCosines.cpp
+  source/ltc/LinearlyTransformedCosines.hpp
   source/point_light_cluster/PLCConfigurationUI.cpp
   source/point_light_cluster/PLCConfigurationUI.hpp
   source/point_light_cluster/PointLightCluster.cpp
-  source/Material.cpp source/Material.hpp)
+  source/point_light_cluster/PointLightCluster.hpp
+)
 
 add_executable(${PROJECT_NAME} ${AREALIGHTS_SOURCE_FILES} ${AREALIGHTS_DEPENDENCIES_SOURCE_FILES})
 

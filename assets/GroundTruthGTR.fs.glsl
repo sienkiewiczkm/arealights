@@ -103,7 +103,8 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
     vec3 localZ = cross(localX, normal);
     localX = cross(normal, localZ);
 
-    vec3 viewSample = normalize(localX * tangentSample.x + localZ * tangentSample.y + normal * tangentSample.z);
+    vec3 viewHalf = normalize(localX * tangentSample.x + localZ * tangentSample.y + normal * tangentSample.z);
+    vec3 viewSample = reflect(normalize(position), viewHalf);
 
     vec2 uv;
 

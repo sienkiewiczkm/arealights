@@ -2,7 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "Application.hpp"
-#include "framework/BasicMeshes.cpp"
+#include "framework/BasicMeshes.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
 #include "point_light_cluster/PointLightCluster.hpp"
