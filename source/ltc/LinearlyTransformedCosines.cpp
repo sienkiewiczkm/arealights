@@ -116,10 +116,10 @@ std::unique_ptr<alf_file> read_alf_file(const std::string &filename)
 
 void LinearlyTransformedCosines::loadLookupTextures()
 {
-    auto lookup_alf = read_alf_file("../assets/lookups/result8.ltc");
+    auto lookup_alf = read_alf_file("../assets/lookups/result_64x64.ltc");
 
     if (!lookup_alf) {
-        throw std::string("Cannot load lookup heitz-tables.ltc");
+        throw std::string("Cannot load LTC lookup tables.");
     }
 
     unsigned int ltcMatA, ltcMatB;
@@ -134,7 +134,7 @@ void LinearlyTransformedCosines::loadLookupTextures()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16,
         lookup_alf->header.num_samples_roughness, lookup_alf->header.num_samples_angle,
         0, GL_RGBA, GL_FLOAT, lookup_alf->texture_slot1.data());
 
@@ -150,7 +150,7 @@ void LinearlyTransformedCosines::loadLookupTextures()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16,
         lookup_alf->header.num_samples_roughness, lookup_alf->header.num_samples_angle,
         0, GL_RGB, GL_FLOAT, lookup_alf->texture_slot2.data());
 

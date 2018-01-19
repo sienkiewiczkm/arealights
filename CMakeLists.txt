@@ -102,7 +102,7 @@ set(AREALIGHTS_SOURCE_FILES
   source/point_light_cluster/PLCConfigurationUI.hpp
   source/point_light_cluster/PointLightCluster.cpp
   source/point_light_cluster/PointLightCluster.hpp
-)
+        source/framework/DebugOutput.hpp source/framework/DebugOutput.cpp)
 
 add_executable(${PROJECT_NAME} ${AREALIGHTS_SOURCE_FILES} ${AREALIGHTS_DEPENDENCIES_SOURCE_FILES})
 

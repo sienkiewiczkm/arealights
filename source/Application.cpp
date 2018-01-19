@@ -74,7 +74,7 @@ void Application::onCreate()
     _cameraInputMapper.setKeyboardInput(_keyboardInput);
     _cameraInputMapper.setMouseInput(_mouseInput);
 
-    glm::ivec2 resolution{800, 600};
+    glm::ivec2 resolution{4*800, 4*600};
     _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
     _deferredPipeline->create(resolution);
 
@@ -110,7 +110,7 @@ void Application::onCreate()
 
         glGenTextures(1, &_intermediateFBOTexture);
         glBindTexture(GL_TEXTURE_2D, _intermediateFBOTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, resolution.x, resolution.y, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, resolution.x, resolution.y, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _intermediateFBOTexture, 0);
@@ -315,6 +315,7 @@ void Application::onRender()
         ImGui::EndMainMenuBar();
     }
 
+    ImGui::ShowTestWindow();
     ImGuiApplication::onRender();
 
     // buffers are swapped after onRender by default

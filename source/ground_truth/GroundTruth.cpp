@@ -95,7 +95,7 @@ namespace arealights {
         auto result = 0.0f;
         auto f = 1.0f;
 
-        for (auto i = static_cast<float>(index); i > 0.0f; i = std::floorf(i/base))
+        for (auto i = static_cast<float>(index); i > 0.0f; i = std::floor(i/base))
         {
             f = f / base;
             result += f * fmodf(i, base);

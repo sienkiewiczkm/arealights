@@ -70,9 +70,7 @@ void PointLightCluster::render()
     const float Imax = 1.0f;
 
     float invMinChannel = 256.0f / 6;
-    float nominatorSecondTerm = std::sqrtf(
-        attLinear*attLinear - 4*attQuadratic*(attConst - Imax * invMinChannel)
-    );
+    float nominatorSecondTerm = std::sqrt(attLinear*attLinear - 4*attQuadratic*(attConst - Imax * invMinChannel));
     float radius = (-attLinear + nominatorSecondTerm) / (2 * attQuadratic);
 
     // Prepare stencil
