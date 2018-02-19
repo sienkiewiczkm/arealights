@@ -118,7 +118,7 @@ void Application::onCreate()
         unsigned int rboDepth;
         glGenRenderbuffers(1, &rboDepth);
         glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolution.x, resolution.y);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -132,8 +132,14 @@ void Application::onCreate()
 void Application::preloadShaderInclude(const char *filepath, std::string glslIncludePath) const
 {
     auto cookTorranceShader = fw::loadASCIITextFile(filepath);
-    glNamedStringARB(GL_SHADER_INCLUDE_ARB, glslIncludePath.size(), glslIncludePath.c_str(),
-     cookTorranceShader.size(), cookTorranceShader.c_str());
+
+    glNamedStringARB(
+        GL_SHADER_INCLUDE_ARB,
+        glslIncludePath.size(),
+        glslIncludePath.c_str(),
+        cookTorranceShader.size(),
+        cookTorranceShader.c_str()
+    );
 
     GLenum err;
     while((err = glGetError()) != GL_NO_ERROR)
