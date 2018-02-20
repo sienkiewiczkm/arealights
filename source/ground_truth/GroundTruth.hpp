@@ -17,6 +17,8 @@ namespace arealights {
         void init();
         void render();
 
+        void setFlux(float flux) { _flux = flux; }
+
         void restartIncrementalRendering() { _numRender = 0; }
 
     protected:
@@ -29,6 +31,7 @@ namespace arealights {
         std::vector<PolygonalLight> _lights;
         glm::mat4 _viewMatrix, _projMatrix;
         unsigned int _numRender;
+        float _flux;
     };
 }
 

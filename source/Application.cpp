@@ -306,6 +306,7 @@ void Application::onRender()
     }
     else if (mode == AREALIGHT_GROUNDTRUTH)
     {
+        _groundTruth->setFlux(_lightInterface->getFlux());
         _groundTruth->setCamera(viewMatrix, projMatrix);
         _groundTruth->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _groundTruth->render();

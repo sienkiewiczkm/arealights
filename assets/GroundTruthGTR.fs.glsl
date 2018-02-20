@@ -12,6 +12,7 @@
 out vec4 FragColor;
 in vec2 fsTexCoords;
 
+uniform float LightFlux;
 uniform vec3 LightColor;
 uniform vec3 RectangularArealight[4];
 uniform float LightDistance;
@@ -122,7 +123,8 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
     vec3 viewDir = normalize(-position);
     float lightDist = length(lightVec);
 
-    vec3 radiance = vec3(1,1,1);
+    // TODO: This works only with lights with area = 1. Radiosity should be used here.
+    vec3 radiance = LightFlux * vec3(1,1,1);
 
     vec3 F0 = mix(vec3(0.04), albedo, metalness);
     float NdotV = max(dot(normal, viewDir), 0.0);
@@ -172,9 +174,6 @@ void main()
                 randomParameters
             );
         }
-
-        // TODO: Remove magnification of result. There is something wrong.
-        accumulator *= 10.0f;
 
         FragColor = vec4(accumulator / NUM_SAMPLES_PER_FRAME, 1.0);
     }
