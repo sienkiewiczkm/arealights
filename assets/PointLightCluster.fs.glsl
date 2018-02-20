@@ -14,34 +14,20 @@ uniform vec3 LightViewPosition;
 uniform vec3 LightColor;
 uniform vec3 LightViewNormal;
 uniform float LightDistance;
+uniform float LightFlux;
 
 uniform int NumPointLights;
 
 const float pi = 3.1415926535897932384626433832795;
-
-float attenuation(
-  float attConst,
-  float attLinear,
-  float attQuadratic,
-  float lightDist
-)
-{
-    float attenuationDenominator = (
-        attConst + attLinear * lightDist + attQuadratic * lightDist * lightDist
-    );
-
-    return 1 / attenuationDenominator;
-}
-
 
 vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, float roughness)
 {
     vec3 lightVec = LightViewPosition - position;
     vec3 lightDir = normalize(lightVec);
     vec3 viewDir = normalize(-position);
-    float lightDist = length(lightVec);
 
-    vec3 radiance = vec3(1,1,1) * attenuation(1, 0.7, 1.8, lightDist);
+    float lightDist = length(lightVec);
+    vec3 intensity = vec3(LightFlux / NumPointLights);
 
     vec3 F0 = mix(vec3(0.04), albedo, metalness);
     float NdotV = max(dot(normal, viewDir), 0.0);
@@ -58,12 +44,17 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
     vec3 kD = vec3(1.0) - kS;
     kD *= 1.0 - metalness;
 
-    vec3 Lo = (kD * albedo / pi + BRDF) * radiance * NdotL;
+    vec3 Lo = (kD * albedo / pi + BRDF) * intensity * NdotL;
 
-    float lightInfluence = clamp(dot(LightViewNormal, -lightDir), 0, 1);
+    float lightInfluence = 1.0;
+    if (dot(LightViewNormal, -lightDir) < 0) {
+        lightInfluence = 0.0;
+    }
+
     Lo *= lightInfluence;
 
-    Lo /= NumPointLights;
+    float falloff = 1 / (4*pi*lightDist*lightDist);
+    Lo *= falloff;
 
     return vec3(Lo);
 }
