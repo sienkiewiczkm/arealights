@@ -67,9 +67,10 @@ void PointLightCluster::render()
     const float attConst = 0.0f;
     const float attLinear = 0;
     const float attQuadratic = 4.0f * 3.14f;
-    const float Imax = 1.0f;
 
-    float invMinChannel = 256.0f / 3;
+    const float Imax = _lightFlux / (_clusterSize.x*_clusterSize.y);
+
+    float invMinChannel = 256.0f / 5;
     float nominatorSecondTerm = std::sqrt(attLinear*attLinear - 4*attQuadratic*(attConst - Imax * invMinChannel));
     float radius = (-attLinear + nominatorSecondTerm) / (2 * attQuadratic);
 
