@@ -127,6 +127,20 @@ void Application::onCreate()
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+
+    // Interface
+
+    _interface.init();
+
+    _lightInterface = std::make_shared<LightInterface>();
+    _interface.addView(_lightInterface);
+
+    _sceneInterface = std::make_shared<SceneInterface>();
+    _interface.addView(_sceneInterface);
+
+    _clusterInterface = std::make_shared<PointLightClusterInterface>();
+    _interface.addView(_clusterInterface);
 }
 
 void Application::preloadShaderInclude(const char *filepath, std::string glslIncludePath) const
@@ -162,23 +176,15 @@ void Application::onUpdate(
     _cameraInputMapper.update(deltaTime);
     _restartIncrementalRendering = _cameraInputMapper.hadMovement();
 
-    auto oldMethod = _configurationUI.getArealightMethod();
-    _configurationUI.update();
+    _interface.render();
 
-    _restartIncrementalRendering =
-            _cameraInputMapper.hadMovement() || (_configurationUI.getArealightMethod() != oldMethod);
-
-    // TODO: Remove magic codes
-    if (_configurationUI.getArealightMethod() == 2) {
-        _plcConfigurationUI.update();
-    }
+    _restartIncrementalRendering = _cameraInputMapper.hadMovement();
 
     std::vector<std::string> materialNames;
     std::transform(std::begin(_materialMap), std::end(_materialMap), std::back_inserter(materialNames),
         [](const std::pair<std::string, std::shared_ptr<Material>> &p) { return p.first; });
 
-    _sceneUI.setMaterials(materialNames);
-    _sceneUI.update();
+    _sceneInterface->setMaterials(materialNames);
 }
 
 void Application::onRender()
@@ -198,26 +204,26 @@ void Application::onRender()
     _deferredPipeline->setProjectionMatrix(projMatrix);
     _deferredPipeline->setMaterialID(0.1f);
 
-    _materialMap[_sceneUI.getMaterialId()].second->bind();
+    _materialMap[_sceneInterface->getMaterialId()].second->bind();
 
-    _deferredPipeline->getShader()->setUniform("SolidMode", _sceneUI.getSceneId());
-    _deferredPipeline->getShader()->setUniform("MetalnessConst", _sceneUI.getMetalness());
-    _deferredPipeline->getShader()->setUniform("RoughnessConst", _sceneUI.getRoughness());
+    _deferredPipeline->getShader()->setUniform("SolidMode", _sceneInterface->getSceneId());
+    _deferredPipeline->getShader()->setUniform("MetalnessConst", _sceneInterface->getMetalness());
+    _deferredPipeline->getShader()->setUniform("RoughnessConst", _sceneInterface->getRoughness());
 
     _planeMesh->render();
 
-    auto lightWorldMatrix = glm::translate({}, _configurationUI.getPosition()) *
+    auto lightWorldMatrix = glm::translate({}, _lightInterface->getPosition()) *
         glm::rotate(
             glm::mat4{},
-            glm::radians(_configurationUI.getRotationX()),
+            glm::radians(_lightInterface->getRotation().x),
             glm::vec3{1.0f, 0.0f, 0.0f}
         ) *
         glm::rotate(
             glm::mat4{},
-            glm::radians(_configurationUI.getRotationY()),
+            glm::radians(_lightInterface->getRotation().y),
             glm::vec3{0.0f, 1.0f, 0.0f}
         ) *
-        glm::scale({}, glm::vec3{_configurationUI.getSize(), 1.0f});
+        glm::scale({}, glm::vec3{_lightInterface->getSize(), 1.0f});
 
     auto planeUpMatrix = glm::rotate(glm::mat4{}, glm::radians(90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     _deferredPipeline->setModelMatrix(lightWorldMatrix * planeUpMatrix);
@@ -233,7 +239,7 @@ void Application::onRender()
     _deferredPipeline->endLightingPass();
     auto gbufferResolution = _deferredPipeline->getFramebufferSize();
 
-    auto mode = _configurationUI.getArealightMethod();
+    auto mode = _lightInterface->getArealightMethod();
 
     glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
     glViewport(0, 0, gbufferResolution.x, gbufferResolution.y);
@@ -241,9 +247,9 @@ void Application::onRender()
 
     GLbitfield clearMask = GL_DEPTH_BUFFER_BIT;
 
-    const auto isIncremental = (mode == 3);
+    const auto isIncremental = (mode == AREALIGHT_GROUNDTRUTH);
 
-    if (mode == 3 && _restartIncrementalRendering) {
+    if (mode == AREALIGHT_GROUNDTRUTH && _restartIncrementalRendering) {
         _groundTruth->restartIncrementalRendering();
     }
 
@@ -278,24 +284,25 @@ void Application::onRender()
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, positionBuffer);
 
-    if (mode == 0)
+    if (mode == AREALIGHT_DISABLED)
     {
         renderClusters();
     }
-    else if (mode == 1)
+    else if (mode == AREALIGHT_LTC)
     {
         _ltc->setCamera(viewMatrix);
         _ltc->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _ltc->render();
     }
-    else if (mode == 2)
+    else if (mode == AREALIGHT_CLUSTER)
     {
-        _pointLightCluster->setClusterSize(_plcConfigurationUI.getClusterSize());
+        _pointLightCluster->setLightFlux(_lightInterface->getFlux());
+        _pointLightCluster->setClusterSize(_clusterInterface->getClusterSize());
         _pointLightCluster->setCamera(viewMatrix, projMatrix);
         _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _pointLightCluster->render();
     }
-    else if (mode == 3)
+    else if (mode == AREALIGHT_GROUNDTRUTH)
     {
         _groundTruth->setCamera(viewMatrix, projMatrix);
         _groundTruth->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
@@ -315,13 +322,6 @@ void Application::onRender()
 
     _renderHelper->drawFullScreenQuad();
 
-    if (ImGui::BeginMainMenuBar())
-    {
-        ImGui::Text("Arealights (2017)");
-        ImGui::EndMainMenuBar();
-    }
-
-    ImGui::ShowTestWindow();
     ImGuiApplication::onRender();
 
     // buffers are swapped after onRender by default

@@ -20,6 +20,11 @@ namespace arealights {
             _clusterSize = clusterSize;
         }
 
+        void setLightFlux(float lightFlux)
+        {
+            _lightFlux = lightFlux;
+        }
+
         void setCamera(const glm::mat4 &viewMatrix, const glm::mat4 &projMatrix);
         void setLights(std::vector<PolygonalLight> lights);
         void init();
@@ -32,6 +37,7 @@ namespace arealights {
         std::vector<PolygonalLight> _lights;
         glm::mat4 _viewMatrix, _projMatrix;
         glm::ivec2 _clusterSize;
+        float _lightFlux;
     };
 
 }

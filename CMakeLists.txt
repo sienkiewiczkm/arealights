@@ -38,8 +38,6 @@ set(AREALIGHTS_DEPENDENCIES_SOURCE_FILES
 set(AREALIGHTS_SOURCE_FILES
   source/Application.cpp
   source/Application.hpp
-  source/ArealightConfigurationUI.cpp
-  source/ArealightConfigurationUI.hpp
   source/DeferredRenderingPipeline.cpp
   source/DeferredRenderingPipeline.hpp
   source/FreeCameraInputMapper.cpp
@@ -50,8 +48,6 @@ set(AREALIGHTS_SOURCE_FILES
   source/PolygonalLight.hpp
   source/RenderHelper.cpp
   source/RenderHelper.hpp
-  source/SceneUI.cpp
-  source/SceneUI.hpp
   source/framework/BasicMeshes.cpp
   source/framework/BasicMeshes.hpp
   source/framework/Common.cpp
@@ -98,11 +94,17 @@ set(AREALIGHTS_SOURCE_FILES
   source/ground_truth/GroundTruth.hpp
   source/ltc/LinearlyTransformedCosines.cpp
   source/ltc/LinearlyTransformedCosines.hpp
-  source/point_light_cluster/PLCConfigurationUI.cpp
-  source/point_light_cluster/PLCConfigurationUI.hpp
   source/point_light_cluster/PointLightCluster.cpp
   source/point_light_cluster/PointLightCluster.hpp
-        source/framework/DebugOutput.hpp source/framework/DebugOutput.cpp)
+  source/framework/DebugOutput.hpp
+  source/framework/DebugOutput.cpp
+  source/interface/LightInterface.hpp
+  source/interface/LightInterface.cpp
+  source/interface/SceneInterface.hpp
+  source/interface/SceneInterface.cpp
+  source/interface/Interface.cpp
+  source/interface/Interface.hpp
+  source/interface/PointLightClusterInterface.cpp source/interface/PointLightClusterInterface.hpp source/interface/IInterfaceView.hpp)
 
 add_executable(${PROJECT_NAME} ${AREALIGHTS_SOURCE_FILES} ${AREALIGHTS_DEPENDENCIES_SOURCE_FILES})
 

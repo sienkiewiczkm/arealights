@@ -9,18 +9,16 @@
 #include "framework/FreeCamera.hpp"
 #include "FreeCameraInputMapper.hpp"
 #include "DeferredRenderingPipeline.hpp"
-#include "ArealightConfigurationUI.hpp"
-#include "SceneUI.hpp"
 #include "framework/inputs/GenericKeyboardInput.hpp"
 #include "framework/Texture.hpp"
 #include "framework/inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
 #include "ltc/LinearlyTransformedCosines.hpp"
-#include "point_light_cluster/PLCConfigurationUI.hpp"
 #include "point_light_cluster/PointLightCluster.hpp"
 #include "ground_truth/GroundTruth.hpp"
 #include "Material.hpp"
 #include <memory>
+#include "interface/Interface.hpp"
 
 namespace arealights
 {
@@ -46,6 +44,11 @@ protected:
     void renderClusters();
 
 private:
+    Interface _interface;
+    std::shared_ptr<LightInterface> _lightInterface;
+    std::shared_ptr<SceneInterface> _sceneInterface;
+    std::shared_ptr<PointLightClusterInterface> _clusterInterface;
+
     std::shared_ptr<RenderHelper> _renderHelper;
 
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
@@ -63,9 +66,6 @@ private:
 
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
-    ArealightConfigurationUI _configurationUI;
-    SceneUI _sceneUI;
-
     unsigned int _intermediateFBO;
     unsigned int _intermediateFBOTexture;
 
@@ -79,8 +79,6 @@ private:
 
     int _activeMaterial;
     std::vector<std::pair<std::string, std::shared_ptr<Material>>> _materialMap;
-
-    PLCConfigurationUI _plcConfigurationUI;
 
     bool _restartIncrementalRendering;
 

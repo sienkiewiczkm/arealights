@@ -5,17 +5,18 @@
 
 #include <vector>
 #include <string>
+#include "IInterfaceView.hpp"
 
 namespace arealights
 {
 
-class SceneUI
+class SceneInterface: public IInterfaceView
 {
 public:
-    SceneUI();
-    ~SceneUI();
+    SceneInterface();
+    virtual ~SceneInterface();
 
-    void update();
+    void render() override;
 
     void setMaterials(std::vector<std::string> materialNames) { _materialNames = materialNames; }
     int getMaterialId() { return _activeMaterial; }
@@ -30,6 +31,8 @@ private:
     float _metalness;
     float _roughness;
     int _activeMaterial;
+
+    int _surfaceType;
 
     std::vector<std::string> _materialNames;
 };

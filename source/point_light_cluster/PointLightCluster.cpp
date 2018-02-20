@@ -125,6 +125,7 @@ void PointLightCluster::render()
         _shader->setUniform("GBufferB", 1);
         _shader->setUniform("GBufferA", 2);
 
+        _shader->setUniform("LightFlux", _lightFlux);
         _shader->setUniform("NumPointLights", _clusterSize.x * _clusterSize.y);
         _shader->setUniform("LightViewPosition", lightViewPosition);
         _shader->setUniform("LightViewNormal", lightViewNormal);
