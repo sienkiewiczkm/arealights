@@ -23,11 +23,14 @@ public:
     void update(const std::chrono::high_resolution_clock::duration& deltaTime);
     bool hadMovement() const { return _hadMovement; }
 
+    void setLock(bool locked) { _locked = locked; }
+
 private:
     std::shared_ptr<fw::FreeCamera> _camera;
     std::shared_ptr<fw::IKeyboardInput> _keyboardInput;
     std::shared_ptr<fw::IMouseInput> _mouseInput;
     bool _hadMovement;
+    bool _locked;
 };
 
 }

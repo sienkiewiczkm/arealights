@@ -53,6 +53,7 @@ void LinearlyTransformedCosines::render()
     _ltcShader->setUniform("LTCLookupA", 3);
     _ltcShader->setUniform("LTCLookupB", 4);
 
+    _ltcShader->setUniform("LightFlux", _flux);
     _ltcShader->setUniform("viewMatrix", _viewMatrix);
     _ltcShader->setUniform("arealightTransform", _lights[0].transformation);
 

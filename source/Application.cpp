@@ -1,19 +1,24 @@
 // arealights (2017)
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
+#include <stb_image_write.h>
 #include "Application.hpp"
 #include "framework/BasicMeshes.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
 #include "point_light_cluster/PointLightCluster.hpp"
 #include "framework/Common.hpp"
+#include <algorithm>
+#include <iomanip>
 
 namespace arealights
 {
 
 Application::Application():
     _restartIncrementalRendering{false},
-    _activeMaterial{0}
+    _activeMaterial{0},
+    _screenshotRequested{false},
+    _cameraLocked{false}
 {
 }
 
@@ -175,6 +180,7 @@ void Application::onUpdate(
 {
     ImGuiApplication::onUpdate(deltaTime);
 
+    _cameraInputMapper.setLock(_cameraLocked);
     _cameraInputMapper.update(deltaTime);
     _restartIncrementalRendering = _cameraInputMapper.hadMovement();
 
@@ -187,6 +193,18 @@ void Application::onUpdate(
         [](const std::pair<std::string, std::shared_ptr<Material>> &p) { return p.first; });
 
     _sceneInterface->setMaterials(materialNames);
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_P)) {
+        _screenshotRequested = true;
+    }
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_I)) {
+        _restartIncrementalRendering = true;
+    }
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_L)) {
+        _cameraLocked = !_cameraLocked;
+    }
 }
 
 void Application::onRender()
@@ -292,6 +310,7 @@ void Application::onRender()
     }
     else if (mode == AREALIGHT_LTC)
     {
+        _ltc->setFlux(_lightInterface->getFlux());
         _ltc->setCamera(viewMatrix);
         _ltc->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _ltc->render();
@@ -306,7 +325,9 @@ void Application::onRender()
     }
     else if (mode == AREALIGHT_GROUNDTRUTH)
     {
-        _groundTruth->setFlux(_lightInterface->getFlux());
+        auto lightSize = _lightInterface->getSize();
+        auto lightArea = lightSize.x * lightSize.y;
+        _groundTruth->setRadiosity(_lightInterface->getFlux() / lightArea);
         _groundTruth->setCamera(viewMatrix, projMatrix);
         _groundTruth->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _groundTruth->render();
@@ -324,6 +345,37 @@ void Application::onRender()
     _blitSRGBProgram->setUniform("TargetTexture", 0);
 
     _renderHelper->drawFullScreenQuad();
+
+    if (_screenshotRequested) {
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&in_time_t), "Screenshot-%Y-%m-%d-%H-%M-%S.png");
+
+        int stride = 3 * sizeof(unsigned char) * framebufferSize.x;
+        std::vector<unsigned char> data(3 * framebufferSize.x * framebufferSize.y);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glReadPixels(0, 0, framebufferSize.x, framebufferSize.y, GL_RGB, GL_UNSIGNED_BYTE, data.data());
+        std::vector<unsigned char> orig = data;
+
+        // We have to flip image to save it correctly.
+        for (int y = 0; y < framebufferSize.y/2; ++y) {
+            for (int x = 0; x < framebufferSize.x; ++x) {
+                auto sourceBase = 3 * (framebufferSize.x * y + x);
+                auto targetBase = 3 * (framebufferSize.x * (framebufferSize.y - y - 1) + x);
+                for (int i = 0; i < 3; ++i) {
+                    std::swap(data[sourceBase + i], data[targetBase + i]);
+                }
+            }
+        }
+
+        stbi_write_png(ss.str().c_str(), framebufferSize.x, framebufferSize.y, 3, data.data(), stride);
+
+        LOG(INFO) << "Screenshot saved in " << ss.str() << " " << framebufferSize.x << "x" << framebufferSize.y;
+
+        _screenshotRequested = false;
+    }
 
     ImGuiApplication::onRender();
 

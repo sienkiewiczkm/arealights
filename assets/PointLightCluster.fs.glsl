@@ -26,17 +26,16 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
     vec3 lightDir = normalize(lightVec);
     vec3 viewDir = normalize(-position);
 
-    float lightDist = length(lightVec);
-    vec3 intensity = vec3(LightFlux / NumPointLights);
+    vec3 intensity = vec3(LightFlux / NumPointLights / (2 * pi * pi));
 
     vec3 F0 = mix(vec3(0.04), albedo, metalness);
-    float NdotV = max(dot(normal, viewDir), 0.0);
-    float NdotL = max(dot(normal, lightDir), 0.0);
-
     vec3 halfwayDir = normalize(viewDir + lightDir);
     float D = distribution_ggx_tr(normal, halfwayDir, roughness);
     vec3 F = fresnel_schlick(max(dot(halfwayDir, viewDir), 0.0), F0);
-    float G = geometry_smith(normal, viewDir, lightDir, roughness);
+    float G = geometry_smith(normal, viewDir, lightDir, roughness*0.5);
+
+    float NdotV = max(dot(halfwayDir, viewDir), 0.0);
+    float NdotL = max(dot(halfwayDir, lightDir), 0.0);
 
     vec3 BRDF = (D * F * G) / (4.0 * NdotV * NdotL + 0.001);
 
@@ -46,14 +45,13 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
 
     vec3 Lo = (kD * albedo / pi + BRDF) * intensity * NdotL;
 
-    float lightInfluence = 1.0;
     if (dot(LightViewNormal, -lightDir) < 0) {
-        lightInfluence = 0.0;
+        Lo *= 0;
     }
 
-    Lo *= lightInfluence;
-
-    float falloff = 1 / (4*pi*lightDist*lightDist);
+    // Fall-off is required but I am not sure what coefficient to use.
+    float lightDist = length(lightVec);
+    float falloff = 1 / (lightDist*lightDist);
     Lo *= falloff;
 
     return vec3(Lo);

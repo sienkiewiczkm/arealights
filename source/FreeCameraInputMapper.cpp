@@ -46,7 +46,7 @@ void FreeCameraInputMapper::update(
         return;
     }
 
-    if (_keyboardInput)
+    if (_keyboardInput && !_locked)
     {
         glm::vec3 movement;
 
@@ -77,7 +77,7 @@ void FreeCameraInputMapper::update(
         _camera->moveRelatively(deltaTimeSeconds.count() * movement);
     }
 
-    if (_mouseInput && _mouseInput->isButtonDown(0))
+    if (_mouseInput && _mouseInput->isButtonDown(0) && !_locked)
     {
         auto movement = _mouseInput->getMovement();
         movement *= deltaTimeSeconds.count();

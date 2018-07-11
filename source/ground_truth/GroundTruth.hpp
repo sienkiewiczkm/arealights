@@ -17,7 +17,7 @@ namespace arealights {
         void init();
         void render();
 
-        void setFlux(float flux) { _flux = flux; }
+        void setRadiosity(float radiosity) { _radiosity = radiosity; }
 
         void restartIncrementalRendering() { _numRender = 0; }
 
@@ -31,7 +31,7 @@ namespace arealights {
         std::vector<PolygonalLight> _lights;
         glm::mat4 _viewMatrix, _projMatrix;
         unsigned int _numRender;
-        float _flux;
+        float _radiosity;
     };
 }
 

@@ -66,6 +66,8 @@ private:
 
     std::unique_ptr<DeferredRenderingPipeline> _deferredPipeline;
 
+    bool _screenshotRequested;
+
     unsigned int _intermediateFBO;
     unsigned int _intermediateFBOTexture;
 
@@ -83,6 +85,8 @@ private:
     bool _restartIncrementalRendering;
 
     void preloadShaderInclude(const char *filepath, std::string glslIncludePath) const;
+
+    bool _cameraLocked;
 };
 
 }

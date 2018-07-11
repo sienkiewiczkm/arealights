@@ -22,6 +22,9 @@ public:
     void setLights(std::vector<PolygonalLight> lights);
     void render();
 
+    void setFlux(float flux) { _flux = flux; }
+    float getFlux() { return _flux; }
+
 private:
     void loadLookupTextures();
 
@@ -34,6 +37,8 @@ private:
 
     std::vector<PolygonalLight> _lights;
     glm::mat4 _viewMatrix;
+
+    float _flux;
 };
 
 }

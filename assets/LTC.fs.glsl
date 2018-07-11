@@ -22,6 +22,7 @@ uniform sampler2D LTCLookupA;
 uniform sampler2D LTCLookupB;
 
 uniform mat4 arealightTransform;
+uniform float LightFlux;
 
 const float LUT_SIZE = 64.0;
 const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
@@ -234,12 +235,15 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
   vec3 diff = LTC_Evaluate(normal, viewDir, position, mat3(1), points, false);
 
   vec3 specularColor = vec3(1);
-  vec3 lightColor = vec3(1);
+  // TODO: Make this work. Move LightArea to uniforms.
+  float LightArea = 1;
+  vec3 lightColor = LightFlux / LightArea / (2 * pi * pi) * vec3(1);
 
   vec3 spec = LTC_Evaluate(normal, viewDir, position, Minv, points, false);
   spec *= specularColor * ltcMagnitude + (1 - specularColor) * ltcFresnel;
 
-  vec3 color = lightColor * (spec*metalness + (1-metalness) * albedo * diff);
+  // spec is not multiplied by metalness because conductors also reflect light
+  vec3 color = lightColor * (spec + (1-metalness) * albedo * diff);
 
   return color;
 }

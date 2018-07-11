@@ -12,7 +12,7 @@
 out vec4 FragColor;
 in vec2 fsTexCoords;
 
-uniform float LightFlux;
+uniform float LightRadiosity;
 uniform vec3 LightColor;
 uniform vec3 RectangularArealight[4];
 uniform float LightDistance;
@@ -99,7 +99,7 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
     float theta = randomParameters.y * (0.5 * pi);
     vec3 tangentSample = vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
 
-    // TODO: Make "good" frame here
+    // TODO: Consider making a better frame here. It won't work in all cases.
     vec3 localX = vec3(1.0, 0.0, 0.0);
     vec3 localZ = cross(localX, normal);
     localX = cross(normal, localZ);
@@ -123,8 +123,7 @@ vec3 shadeSurface(vec3 position, vec3 normal, vec3 albedo, float metalness, floa
     vec3 viewDir = normalize(-position);
     float lightDist = length(lightVec);
 
-    // TODO: This works only with lights with area = 1. Radiosity should be used here.
-    vec3 radiance = LightFlux * vec3(1,1,1);
+    vec3 radiance = vec3(LightRadiosity);
 
     vec3 F0 = mix(vec3(0.04), albedo, metalness);
     float NdotV = max(dot(normal, viewDir), 0.0);
