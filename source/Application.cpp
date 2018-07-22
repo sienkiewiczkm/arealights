@@ -18,7 +18,10 @@ Application::Application():
     _restartIncrementalRendering{false},
     _activeMaterial{0},
     _screenshotRequested{false},
-    _cameraLocked{false}
+    _cameraLocked{false},
+    _autoscreenshot{false},
+    _frame{0},
+    _screenshotAnnotation{}
 {
 }
 
@@ -107,9 +110,16 @@ void Application::onCreate()
     _copperRockMaterial->setMetalnessTexture("../assets/textures/copper-rock/copper-rock1-metal.png");
     _copperRockMaterial->setRoughnessTexture("../assets/textures/copper-rock/copper-rock1-rough.png");
 
+    _herringboneMaterial = std::make_shared<Material>();
+    _herringboneMaterial->setAlbedoTexture("../assets/textures/herringbone/herringbone_color.png");
+    _herringboneMaterial->setNormalTexture("../assets/textures/herringbone/herringbone_normal.png");
+    _herringboneMaterial->setMetalnessTexture("../assets/textures/herringbone/herringbone_metalness.png");
+    _herringboneMaterial->setRoughnessTexture("../assets/textures/herringbone/herringbone_roughness.png");
+
     _materialMap.push_back({"Scuffed Iron", _scuffedIronMaterial});
     _materialMap.push_back({"Wooden Planks", _woodPlanksMaterial});
     _materialMap.push_back({"Copper infused rock", _copperRockMaterial});
+    _materialMap.push_back({"Herringbone", _herringboneMaterial});
 
     {
         glGenFramebuffers(1, &_intermediateFBO);
@@ -178,6 +188,8 @@ void Application::onUpdate(
     const std::chrono::high_resolution_clock::duration& deltaTime
 )
 {
+    ++_frame;
+
     ImGuiApplication::onUpdate(deltaTime);
 
     _cameraInputMapper.setLock(_cameraLocked);
@@ -196,6 +208,7 @@ void Application::onUpdate(
 
     if (_keyboardInput->isKeyTapped(GLFW_KEY_P)) {
         _screenshotRequested = true;
+        _screenshotAnnotation = "";
     }
 
     if (_keyboardInput->isKeyTapped(GLFW_KEY_I)) {
@@ -205,12 +218,82 @@ void Application::onUpdate(
     if (_keyboardInput->isKeyTapped(GLFW_KEY_L)) {
         _cameraLocked = !_cameraLocked;
     }
+
+    // Automate screenshot taking
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_F1)) {
+        this->setWindowSize({1024, 1024});
+    }
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_F2)) {
+        _camera->setEulerAngles({M_PI*(1.0/12.0), 0, 0});
+        _camera->setWorldPosition({0, 0.5, 5});
+    }
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_F3)) {
+        _camera->setEulerAngles({0, -M_PI_4, 0});
+        _camera->setWorldPosition({5, 0.3, 5});
+    }
+
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_F5)) {
+        _autoscreenshot = true;
+        _autoscreenshotStep = 0;
+        _autoscreenshotFrame = 0;
+    }
+
+    if (_autoscreenshot) {
+        if (_autoscreenshotStep <= 4) {
+            if (_autoscreenshotStep == 0 && _autoscreenshotFrame == 0) {
+                _autoscreenshotOutFile.open("autoscreenshot_log.txt", std::ios_base::app);
+            }
+
+            const int numFrames = _lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ? 100 : 5;
+
+            _timeSum += _frameTimeMs;
+
+            // finalize previous step - all frames done for this one
+            if (_autoscreenshotFrame == numFrames * (_autoscreenshotStep+1)) {
+                // log time
+                _autoscreenshotOutFile << "method=" << static_cast<int>(_lightInterface->getArealightMethod());
+                _autoscreenshotOutFile << "\rroughness=" << 0.2 + _autoscreenshotStep * 0.2;
+                _autoscreenshotOutFile << "\rtime=" << (_lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ?
+                    _timeSum :
+                    _timeSum / numFrames) << std::endl;
+                // go to next step
+                ++_autoscreenshotStep;
+            }
+
+            // first frame of the new step
+            if (_autoscreenshotStep <= 4 && _autoscreenshotFrame == numFrames * _autoscreenshotStep) {
+                _sceneInterface->setRoughness(0.2 + _autoscreenshotStep * 0.2);
+                _timeSum = 0.0;
+                _restartIncrementalRendering = true;
+            }
+
+            // ground truth needs a few frames, that's why there is a waiting period, also for other methods we
+            // calculate average for gen time
+            // last frame of current step
+            if (_autoscreenshotFrame == numFrames * (_autoscreenshotStep + 1) - 1) {
+                _screenshotRequested = true;
+            }
+
+            ++_autoscreenshotFrame;
+        } else {
+            _autoscreenshot = false;
+            if (_autoscreenshotOutFile.is_open()) {
+                _autoscreenshotOutFile << "Closing.";
+                _autoscreenshotOutFile.close();
+            }
+        }
+    }
 }
 
 void Application::onRender()
 {
     auto framebufferSize = getFramebufferSize();
     auto aspectRatio = static_cast<float>(framebufferSize.x) / framebufferSize.y;
+
+    auto frameRenderingStart = std::chrono::high_resolution_clock::now();
 
     auto viewMatrix = _camera->getViewMatrix();
     auto projMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
@@ -346,12 +429,42 @@ void Application::onRender()
 
     _renderHelper->drawFullScreenQuad();
 
+    auto frameRenderingEnd = std::chrono::high_resolution_clock::now();
+    _frameTimeMs = std::chrono::duration<float>(frameRenderingEnd - frameRenderingStart).count() * 1000;
+
+    if (_frame % 20 == 0) {
+        _interface.setRenderTimeMs(_frameTimeMs);
+    }
+
     if (_screenshotRequested) {
         auto now = std::chrono::system_clock::now();
         auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
+        std::string methodName = "";
+        switch (_lightInterface->getArealightMethod()) {
+        case AREALIGHT_DISABLED:
+            methodName = "disabled";
+            break;
+        case AREALIGHT_CLUSTER:
+            methodName = "point";
+            break;
+        case AREALIGHT_GROUNDTRUTH:
+            methodName = "gt";
+            break;
+        case AREALIGHT_LTC:
+            methodName = "ltc";
+            break;
+        }
+
         std::stringstream ss;
-        ss << std::put_time(std::localtime(&in_time_t), "Screenshot-%Y-%m-%d-%H-%M-%S.png");
+        ss << std::put_time(std::localtime(&in_time_t), "Screenshot-%Y-%m-%d-%H-%M-%S");
+        ss << "-" << methodName;
+        ss << "-flux-" << _lightInterface->getFlux();
+        ss << "-roughness-" << _sceneInterface->getRoughness();
+        if (_screenshotAnnotation.length() > 0) {
+            ss << "-" << _screenshotAnnotation;
+        }
+        ss << ".png";
 
         int stride = 3 * sizeof(unsigned char) * framebufferSize.x;
         std::vector<unsigned char> data(3 * framebufferSize.x * framebufferSize.y);

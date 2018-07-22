@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-Interface::Interface()
+Interface::Interface() : _renderTimeMs{0}
 {
 }
 
@@ -25,7 +25,7 @@ void Interface::render()
 
     if (ImGui::BeginMainMenuBar())
     {
-        ImGui::Text("Arealights (2017) by Kamil Sienkiewicz - Master Thesis");
+        ImGui::Text("Arealights (2017) by Kamil Sienkiewicz - Master Thesis (frame render time: %.4fms)", _renderTimeMs);
         ImGui::EndMainMenuBar();
     }
 

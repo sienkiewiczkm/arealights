@@ -24,6 +24,7 @@ public:
     int getSceneId() { return _sceneRadio; }
     float getMetalness() { return _metalness; }
     float getRoughness() { return _roughness; }
+    void setRoughness(float roughness) { _roughness = roughness; }
 
 private:
     bool _showUI;

@@ -117,7 +117,7 @@ std::unique_ptr<alf_file> read_alf_file(const std::string &filename)
 
 void LinearlyTransformedCosines::loadLookupTextures()
 {
-    auto lookup_alf = read_alf_file("../assets/lookups/result_64x64.ltc");
+    auto lookup_alf = read_alf_file("../assets/lookups/heitz_tables.ltc");
 
     if (!lookup_alf) {
         throw std::string("Cannot load LTC lookup tables.");

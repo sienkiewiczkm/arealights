@@ -20,9 +20,12 @@ public:
 
     void render();
 
+    void setRenderTimeMs(float ms) { _renderTimeMs = ms; }
+
 protected:
     void applyImGuiStyle();
 
 private:
     std::vector<std::shared_ptr<IInterfaceView>> _views;
+    float _renderTimeMs;
 };

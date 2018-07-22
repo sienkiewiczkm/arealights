@@ -51,6 +51,14 @@ private:
 
     std::shared_ptr<RenderHelper> _renderHelper;
 
+    bool _autoscreenshot;
+    int _autoscreenshotStep;
+    int _autoscreenshotFrame;
+    float _timeSum;
+    std::ofstream _autoscreenshotOutFile;
+
+    std::string _screenshotAnnotation;
+
     std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::ShaderProgram> _blitSRGBProgram;
     std::unique_ptr<fw::ShaderProgram> _clusteringShader;
@@ -71,6 +79,8 @@ private:
     unsigned int _intermediateFBO;
     unsigned int _intermediateFBOTexture;
 
+    float _frameTimeMs;
+
     std::shared_ptr<PointLightCluster> _pointLightCluster;
     std::shared_ptr<LinearlyTransformedCosines> _ltc;
     std::shared_ptr<GroundTruth> _groundTruth;
@@ -78,6 +88,7 @@ private:
     std::shared_ptr<Material> _scuffedIronMaterial;
     std::shared_ptr<Material> _copperRockMaterial;
     std::shared_ptr<Material> _woodPlanksMaterial;
+    std::shared_ptr<Material> _herringboneMaterial;
 
     int _activeMaterial;
     std::vector<std::pair<std::string, std::shared_ptr<Material>>> _materialMap;
@@ -87,6 +98,8 @@ private:
     void preloadShaderInclude(const char *filepath, std::string glslIncludePath) const;
 
     bool _cameraLocked;
+
+    long long _frame;
 };
 
 }
