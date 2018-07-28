@@ -191,6 +191,7 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
 
     if (n >= 4)
         sum += IntegrateEdge(L[3], L[4]);
+
     if (n == 5)
         sum += IntegrateEdge(L[4], L[0]);
 

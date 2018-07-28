@@ -117,7 +117,7 @@ std::unique_ptr<alf_file> read_alf_file(const std::string &filename)
 
 void LinearlyTransformedCosines::loadLookupTextures()
 {
-    auto lookup_alf = read_alf_file("../assets/lookups/heitz_tables.ltc");
+    auto lookup_alf = read_alf_file("../assets/lookups/result_64x64.ltc");
 
     if (!lookup_alf) {
         throw std::string("Cannot load LTC lookup tables.");
@@ -130,12 +130,12 @@ void LinearlyTransformedCosines::loadLookupTextures()
     glActiveTexture(GL_TEXTURE0);
 
     glBindTexture(GL_TEXTURE_2D, ltcMatA);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
         lookup_alf->header.num_samples_roughness, lookup_alf->header.num_samples_angle,
         0, GL_RGBA, GL_FLOAT, lookup_alf->texture_slot1.data());
 
@@ -146,12 +146,12 @@ void LinearlyTransformedCosines::loadLookupTextures()
     }
 
     glBindTexture(GL_TEXTURE_2D, ltcMatB);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
         lookup_alf->header.num_samples_roughness, lookup_alf->header.num_samples_angle,
         0, GL_RGB, GL_FLOAT, lookup_alf->texture_slot2.data());
 
