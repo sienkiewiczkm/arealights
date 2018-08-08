@@ -20,6 +20,8 @@ namespace arealights {
             _clusterSize = clusterSize;
         }
 
+        glm::ivec2 getClusterSize() const { return _clusterSize; }
+
         void setLightFlux(float lightFlux)
         {
             _lightFlux = lightFlux;

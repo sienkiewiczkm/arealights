@@ -10,11 +10,6 @@ public:
     Material() = default;
     ~Material() = default;
 
-    void setAlbedoTextureConst(glm::vec3 albedoConst);
-    void setNormalTextureConst(glm::vec3 normalConst = glm::vec3{0.0f, 1.0f, 0.0f});
-    void setMetalnessTextureConst(float metalness);
-    void setRoughnessTextureConst(float roughness);
-
     void setAlbedoTexture(std::string filePath);
     void setNormalTexture(std::string filePath);
     void setMetalnessTexture(std::string filePath);

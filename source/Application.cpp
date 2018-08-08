@@ -21,7 +21,11 @@ Application::Application():
     _cameraLocked{false},
     _autoscreenshot{false},
     _frame{0},
-    _screenshotAnnotation{}
+    _screenshotAnnotation{},
+    _measure{},
+    _measureAccumulator{},
+    _measureFramesNum{},
+    _lastMeasurement{}
 {
 }
 
@@ -116,10 +120,60 @@ void Application::onCreate()
     _herringboneMaterial->setMetalnessTexture("../assets/textures/herringbone/herringbone_metalness.png");
     _herringboneMaterial->setRoughnessTexture("../assets/textures/herringbone/herringbone_roughness.png");
 
+    _metalPlateMaterial = std::make_shared<Material>();
+    _metalPlateMaterial->setAlbedoTexture("../assets/textures/metal_plate/Metal_Plate_007_COLOR.jpg");
+    _metalPlateMaterial->setNormalTexture("../assets/textures/metal_plate/Metal_Plate_007_NORM.jpg");
+    _metalPlateMaterial->setMetalnessTexture("../assets/textures/common/metalness_conductor.png");
+    _metalPlateMaterial->setRoughnessTexture("../assets/textures/metal_plate/Metal_Plate_007_ROUGH.jpg");
+
+    _blueMarbleMaterial = std::make_shared<Material>();
+    _blueMarbleMaterial->setAlbedoTexture("../assets/textures/blue_marble/Blue_Marble_002_COLOR.jpg");
+    _blueMarbleMaterial->setNormalTexture("../assets/textures/blue_marble/Blue_Marble_002_NORM.jpg");
+    _blueMarbleMaterial->setMetalnessTexture("../assets/textures/common/metalness_conductor.png");
+    _blueMarbleMaterial->setRoughnessTexture("../assets/textures/blue_marble/Blue_Marble_002_ROUGH.jpg");
+
+    _tilesMaterial = std::make_shared<Material>();
+    _tilesMaterial->setAlbedoTexture("../assets/textures/tiles/Tiles_013_COLOR.jpg");
+    _tilesMaterial->setNormalTexture("../assets/textures/tiles/Tiles_013_NORM.jpg");
+    _tilesMaterial->setMetalnessTexture("../assets/textures/common/metalness_conductor.png");
+    _tilesMaterial->setRoughnessTexture("../assets/textures/tiles/Tiles_013_ROUGH.jpg");
+
+    auto marbleCheckerboard = std::make_shared<Material>();
+    marbleCheckerboard->setAlbedoTexture("../assets/textures/textures.com/TexturesCom_Marble_Checkerboard_1K_albedo.png");
+    marbleCheckerboard->setNormalTexture("../assets/textures/textures.com/TexturesCom_Marble_Checkerboard_1K_normal.png");
+    marbleCheckerboard->setMetalnessTexture("../assets/textures/common/metalness_isolator.png");
+    marbleCheckerboard->setRoughnessTexture("../assets/textures/textures.com/TexturesCom_Marble_Checkerboard_1K_roughness.png");
+
+    auto copperPolished = std::make_shared<Material>();
+    copperPolished->setAlbedoTexture("../assets/textures/textures.com/TexturesCom_Metal_CopperPolished_1K_albedo.png");
+    copperPolished->setNormalTexture("../assets/textures/textures.com/TexturesCom_Metal_CopperPolished_1K_normal.png");
+    copperPolished->setMetalnessTexture("../assets/textures/textures.com/TexturesCom_Metal_CopperPolished_1K_metallic.png");
+    copperPolished->setRoughnessTexture("../assets/textures/textures.com/TexturesCom_Metal_CopperPolished_1K_roughness.png");
+
+    auto polypropylene = std::make_shared<Material>();
+    polypropylene->setAlbedoTexture("../assets/textures/textures.com/TexturesCom_Plastic_PolypropyleneRough_1K_albedo.png");
+    polypropylene->setNormalTexture("../assets/textures/textures.com/TexturesCom_Plastic_PolypropyleneRough_1K_normal.png");
+    polypropylene->setMetalnessTexture("../assets/textures/common/metalness_isolator.png");
+    polypropylene->setRoughnessTexture("../assets/textures/textures.com/TexturesCom_Plastic_PolypropyleneRough_1K_roughness.png");
+
+    auto tilesCheckerboard = std::make_shared<Material>();
+    tilesCheckerboard->setAlbedoTexture("../assets/textures/textures.com/TexturesCom_Tiles_CheckerboardVintage_1K_albedo.png");
+    tilesCheckerboard->setNormalTexture("../assets/textures/textures.com/TexturesCom_Tiles_CheckerboardVintage_1K_normal.png");
+    tilesCheckerboard->setMetalnessTexture("../assets/textures/common/metalness_isolator.png");
+    tilesCheckerboard->setRoughnessTexture("../assets/textures/textures.com/TexturesCom_Tiles_CheckerboardVintage_1K_roughness.png");
+
     _materialMap.push_back({"Scuffed Iron", _scuffedIronMaterial});
     _materialMap.push_back({"Wooden Planks", _woodPlanksMaterial});
     _materialMap.push_back({"Copper infused rock", _copperRockMaterial});
     _materialMap.push_back({"Herringbone", _herringboneMaterial});
+    _materialMap.push_back({"Metal plate", _metalPlateMaterial});
+    _materialMap.push_back({"Blue marble", _blueMarbleMaterial});
+    _materialMap.push_back({"Tiles", _tilesMaterial});
+
+    _materialMap.push_back({"Textures.com - Marble checkerboard", marbleCheckerboard});
+    _materialMap.push_back({"Textures.com - Polished copper", copperPolished});
+    _materialMap.push_back({"Textures.com - Polypropylene", polypropylene});
+    _materialMap.push_back({"Textures.com - Vintage tiles", tilesCheckerboard});
 
     {
         glGenFramebuffers(1, &_intermediateFBO);
@@ -241,13 +295,36 @@ void Application::onUpdate(
         _autoscreenshotFrame = 0;
     }
 
+    /*
+    // Average time measurements
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_M)) {
+        _measure = true;
+        _measureAccumulator = 0.0f;
+        _measureFramesNum = 0;
+    }
+
+    if (_measure) {
+        if (_measureFramesNum < 100) {
+            _measureAccumulator += _frameTimeMs;
+            ++_measureFramesNum;
+        } else {
+            _measure = false;
+            _lastMeasurement = _measureAccumulator / 100.0f;
+        }
+    }
+
+    ImGui::Text("Last measurement: %.4f", _lastMeasurement);
+    */
+
+
+    // Autoscreenshoting for paper purposes
     if (_autoscreenshot) {
-        if (_autoscreenshotStep <= 4) {
+        if (_autoscreenshotStep <= 5) {
             if (_autoscreenshotStep == 0 && _autoscreenshotFrame == 0) {
                 _autoscreenshotOutFile.open("autoscreenshot_log.txt", std::ios_base::app);
             }
 
-            const int numFrames = _lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ? 100 : 5;
+            const int numFrames = _lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ? 1000 : 5;
 
             _timeSum += _frameTimeMs;
 
@@ -255,7 +332,7 @@ void Application::onUpdate(
             if (_autoscreenshotFrame == numFrames * (_autoscreenshotStep+1)) {
                 // log time
                 _autoscreenshotOutFile << "method=" << static_cast<int>(_lightInterface->getArealightMethod());
-                _autoscreenshotOutFile << "\rroughness=" << 0.2 + _autoscreenshotStep * 0.2;
+                _autoscreenshotOutFile << "\rroughness=" << std::max(0.05f, _autoscreenshotStep * 0.2f);
                 _autoscreenshotOutFile << "\rtime=" << (_lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ?
                     _timeSum :
                     _timeSum / numFrames) << std::endl;
@@ -264,8 +341,8 @@ void Application::onUpdate(
             }
 
             // first frame of the new step
-            if (_autoscreenshotStep <= 4 && _autoscreenshotFrame == numFrames * _autoscreenshotStep) {
-                _sceneInterface->setRoughness(0.2 + _autoscreenshotStep * 0.2);
+            if (_autoscreenshotStep <= 5 && _autoscreenshotFrame == numFrames * _autoscreenshotStep) {
+                _sceneInterface->setRoughness(std::max(0.05f, _autoscreenshotStep * 0.2f));
                 _timeSum = 0.0;
                 _restartIncrementalRendering = true;
             }
@@ -354,6 +431,7 @@ void Application::onRender()
 
     if (mode == AREALIGHT_GROUNDTRUTH && _restartIncrementalRendering) {
         _groundTruth->restartIncrementalRendering();
+        LOG(INFO) << "Restarting incremental rendering";
     }
 
     if (!isIncremental || _restartIncrementalRendering)
@@ -446,8 +524,13 @@ void Application::onRender()
             methodName = "disabled";
             break;
         case AREALIGHT_CLUSTER:
-            methodName = "point";
+        {
+            std::stringstream ss;
+            auto clusterSize = _pointLightCluster->getClusterSize();
+            ss << "point" << clusterSize.x << "x" << clusterSize.y;
+            methodName = ss.str();
             break;
+        }
         case AREALIGHT_GROUNDTRUTH:
             methodName = "gt";
             break;
@@ -457,10 +540,10 @@ void Application::onRender()
         }
 
         std::stringstream ss;
-        ss << std::put_time(std::localtime(&in_time_t), "Screenshot-%Y-%m-%d-%H-%M-%S");
-        ss << "-" << methodName;
+        ss << methodName;
         ss << "-flux-" << _lightInterface->getFlux();
         ss << "-roughness-" << _sceneInterface->getRoughness();
+        ss << std::put_time(std::localtime(&in_time_t), "-%Y-%m-%d-%H-%M-%S");
         if (_screenshotAnnotation.length() > 0) {
             ss << "-" << _screenshotAnnotation;
         }

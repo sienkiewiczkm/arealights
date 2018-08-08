@@ -51,6 +51,11 @@ private:
 
     std::shared_ptr<RenderHelper> _renderHelper;
 
+    bool _measure;
+    float _measureAccumulator;
+    float _measureFramesNum;
+    float _lastMeasurement;
+
     bool _autoscreenshot;
     int _autoscreenshotStep;
     int _autoscreenshotFrame;
@@ -89,6 +94,9 @@ private:
     std::shared_ptr<Material> _copperRockMaterial;
     std::shared_ptr<Material> _woodPlanksMaterial;
     std::shared_ptr<Material> _herringboneMaterial;
+    std::shared_ptr<Material> _metalPlateMaterial;
+    std::shared_ptr<Material> _blueMarbleMaterial;
+    std::shared_ptr<Material> _tilesMaterial;
 
     int _activeMaterial;
     std::vector<std::pair<std::string, std::shared_ptr<Material>>> _materialMap;

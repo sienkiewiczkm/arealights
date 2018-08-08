@@ -25,7 +25,7 @@ public:
     const glm::vec2 getRotation() { return _rotation; }
     const float getFlux() { return _flux; }
 
-    const EArealightMethod getArealightMethod() { return (EArealightMethod)((int)_selectedArealightMethod + 1); };
+    const EArealightMethod getArealightMethod() { return (EArealightMethod)((int)_selectedArealightMethod); };
 
 private:
     std::vector<int> _arealightMethods;

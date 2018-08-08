@@ -4,22 +4,6 @@
 #include "Material.hpp"
 #include "framework/Logging.hpp"
 
-void Material::setAlbedoTextureConst(glm::vec3 albedoConst) {
-    // TODO: Implement this
-}
-
-void Material::setNormalTextureConst(glm::vec3 normalConst) {
-    // TODO: Implement this
-}
-
-void Material::setMetalnessTextureConst(float metalness) {
-    // TODO: Implement this
-}
-
-void Material::setRoughnessTextureConst(float roughness) {
-    // TODO: Implement this
-}
-
 void Material::setAlbedoTexture(std::string filePath) {
     setAlbedoTexture(std::make_unique<fw::Texture>(filePath));
 }

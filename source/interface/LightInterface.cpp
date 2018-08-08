@@ -11,7 +11,8 @@ LightInterface::LightInterface():
     _position{0, 0.55f, 0},
     _flux{10.0f},
     _size{1.0f, 1.0f},
-    _rotation{0}
+    _rotation{0},
+    _selectedArealightMethod{AREALIGHT_LTC}
 {
 }
 
@@ -26,12 +27,13 @@ void LightInterface::render()
     }
 
     const char* arealightMethods[] = {
+        "Disabled",
         "Point light cluster",
         "Ground Truth (GGX)",
         "Linearly Transformed Cosines"
     };
 
-    ImGui::Combo("Method", reinterpret_cast<int*>(&_selectedArealightMethod), arealightMethods, 3);
+    ImGui::Combo("Method", reinterpret_cast<int*>(&_selectedArealightMethod), arealightMethods, 4);
 
     ImGui::DragFloat3("Position", glm::value_ptr(_position), 0.1f);
     ImGui::DragFloat2("Size", glm::value_ptr(_size), 0.1f, 0.01f, 100.0f);
