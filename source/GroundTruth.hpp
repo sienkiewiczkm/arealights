@@ -3,8 +3,8 @@
 
 #pragma once
 #include "glm/glm.hpp"
-#include "../PolygonalLight.hpp"
-#include "../RenderHelper.hpp"
+#include "PolygonalLight.hpp"
+#include "RenderHelper.hpp"
 
 namespace arealights {
     class GroundTruth {

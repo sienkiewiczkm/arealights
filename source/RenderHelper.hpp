@@ -10,6 +10,9 @@
 namespace arealights
 {
 
+/***
+ * @brief Rendering helpers containing repeatedly used operations in the preview application.
+ */
 class RenderHelper
 {
 public:

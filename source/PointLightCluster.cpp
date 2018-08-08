@@ -2,7 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "PointLightCluster.hpp"
-#include "../framework/Logging.hpp"
+#include "framework/Logging.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
 

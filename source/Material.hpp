@@ -5,6 +5,9 @@
 #include <memory>
 #include "framework/Texture.hpp"
 
+/***
+ * \brief Texture-based material. Helps with loading textures and binding them to current shader.
+ */
 class Material {
 public:
     Material() = default;

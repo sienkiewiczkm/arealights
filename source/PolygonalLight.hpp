@@ -9,6 +9,10 @@
 namespace arealights
 {
 
+/***
+ * \brief Polygonal light structure definition. Contains vertices, color and world transformation of the light.
+ *
+ */
 struct PolygonalLight
 {
     PolygonalLight() {}

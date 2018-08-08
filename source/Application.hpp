@@ -7,18 +7,18 @@
 #include "framework/Mesh.hpp"
 #include "framework/Shaders.hpp"
 #include "framework/FreeCamera.hpp"
-#include "FreeCameraInputMapper.hpp"
+#include "framework/FreeCameraInputMapper.hpp"
 #include "DeferredRenderingPipeline.hpp"
 #include "framework/inputs/GenericKeyboardInput.hpp"
 #include "framework/Texture.hpp"
 #include "framework/inputs/GenericMouseInput.hpp"
 #include "RenderHelper.hpp"
-#include "ltc/LinearlyTransformedCosines.hpp"
-#include "point_light_cluster/PointLightCluster.hpp"
-#include "ground_truth/GroundTruth.hpp"
+#include "LinearlyTransformedCosines.hpp"
+#include "PointLightCluster.hpp"
+#include "GroundTruth.hpp"
 #include "Material.hpp"
 #include <memory>
-#include "interface/Interface.hpp"
+#include "Interface.hpp"
 
 namespace arealights
 {
@@ -45,9 +45,6 @@ protected:
 
 private:
     Interface _interface;
-    std::shared_ptr<LightInterface> _lightInterface;
-    std::shared_ptr<SceneInterface> _sceneInterface;
-    std::shared_ptr<PointLightClusterInterface> _clusterInterface;
 
     std::shared_ptr<RenderHelper> _renderHelper;
 

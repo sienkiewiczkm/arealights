@@ -115,13 +115,4 @@ void DeferredRenderingPipeline::setMaterialID(float materialID)
     _geometryPassShader->setUniform(location, materialID);
 }
 
-
-void DeferredRenderingPipeline::startLightingPass()
-{
-}
-
-void DeferredRenderingPipeline::endLightingPass()
-{
-}
-
 }

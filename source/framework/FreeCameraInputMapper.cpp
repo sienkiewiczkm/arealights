@@ -2,8 +2,10 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "FreeCameraInputMapper.hpp"
-#include "framework/OpenGL.hpp"
+#include "OpenGL.hpp"
 #include "glm/glm.hpp"
+
+#include <utility>
 
 namespace arealights
 {
@@ -16,21 +18,21 @@ void FreeCameraInputMapper::setKeyboardInput(
     std::shared_ptr<fw::IKeyboardInput> kbInput
 )
 {
-    _keyboardInput = kbInput;
+    _keyboardInput = std::move(kbInput);
 }
 
 void FreeCameraInputMapper::setMouseInput(
     std::shared_ptr<fw::IMouseInput> mouseInput
 )
 {
-    _mouseInput = mouseInput;
+    _mouseInput = std::move(mouseInput);
 }
 
 void FreeCameraInputMapper::setCamera(
     std::shared_ptr<fw::FreeCamera> camera
 )
 {
-    _camera = camera;
+    _camera = std::move(camera);
 }
 
 void FreeCameraInputMapper::update(

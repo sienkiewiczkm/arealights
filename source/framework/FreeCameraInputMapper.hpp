@@ -4,13 +4,18 @@
 #pragma once
 #include <memory>
 #include <chrono>
-#include "framework/inputs/IKeyboardInput.hpp"
-#include "framework/inputs/IMouseInput.hpp"
-#include "framework/FreeCamera.hpp"
+#include "inputs/IKeyboardInput.hpp"
+#include "inputs/IMouseInput.hpp"
+#include "FreeCamera.hpp"
 
 namespace arealights
 {
 
+/***
+ * \brief This module maps keyboard and mouse actions to FreeCamera movement. Mapping is very simple and it is targeted
+ *        towards debug purposes.
+ *
+ */
 class FreeCameraInputMapper
 {
 public:

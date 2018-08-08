@@ -2,7 +2,7 @@
 // Kamil Sienkiewicz <sienkiewiczkm@gmail.com>
 
 #include "LinearlyTransformedCosines.hpp"
-#include "../framework/Logging.hpp"
+#include "framework/Logging.hpp"
 
 namespace arealights
 {

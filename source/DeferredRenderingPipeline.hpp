@@ -26,9 +26,6 @@ public:
     void setProjectionMatrix(glm::mat4 projectionMatrix);
     void setMaterialID(float materialID);
 
-    virtual void startLightingPass();
-    virtual void endLightingPass();
-
     unsigned int getFramebuffer() { return _gBuffer; }
     glm::ivec2 getFramebufferSize() { return _resolution; }
 

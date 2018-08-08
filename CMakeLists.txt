@@ -40,8 +40,8 @@ set(AREALIGHTS_SOURCE_FILES
   source/Application.hpp
   source/DeferredRenderingPipeline.cpp
   source/DeferredRenderingPipeline.hpp
-  source/FreeCameraInputMapper.cpp
-  source/FreeCameraInputMapper.hpp
+  source/framework/FreeCameraInputMapper.cpp
+  source/framework/FreeCameraInputMapper.hpp
   source/Main.cpp
   source/Material.cpp
   source/Material.hpp
@@ -90,21 +90,17 @@ set(AREALIGHTS_SOURCE_FILES
   source/framework/inputs/IKeyboardInput.hpp
   source/framework/inputs/IMouseInput.hpp
   source/framework/inputs/InputStates.hpp
-  source/ground_truth/GroundTruth.cpp
-  source/ground_truth/GroundTruth.hpp
-  source/ltc/LinearlyTransformedCosines.cpp
-  source/ltc/LinearlyTransformedCosines.hpp
-  source/point_light_cluster/PointLightCluster.cpp
-  source/point_light_cluster/PointLightCluster.hpp
+  source/GroundTruth.cpp
+  source/GroundTruth.hpp
+  source/LinearlyTransformedCosines.cpp
+  source/LinearlyTransformedCosines.hpp
+  source/PointLightCluster.cpp
+  source/PointLightCluster.hpp
   source/framework/DebugOutput.hpp
   source/framework/DebugOutput.cpp
-  source/interface/LightInterface.hpp
-  source/interface/LightInterface.cpp
-  source/interface/SceneInterface.hpp
-  source/interface/SceneInterface.cpp
-  source/interface/Interface.cpp
-  source/interface/Interface.hpp
-  source/interface/PointLightClusterInterface.cpp source/interface/PointLightClusterInterface.hpp source/interface/IInterfaceView.hpp)
+  source/Interface.cpp
+  source/Interface.hpp
+  )
 
 add_executable(${PROJECT_NAME} ${AREALIGHTS_SOURCE_FILES} ${AREALIGHTS_DEPENDENCIES_SOURCE_FILES})
 

@@ -6,7 +6,7 @@
 #include "framework/BasicMeshes.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
-#include "point_light_cluster/PointLightCluster.hpp"
+#include "PointLightCluster.hpp"
 #include "framework/Common.hpp"
 #include <algorithm>
 #include <iomanip>
@@ -37,7 +37,7 @@ void Application::onCreate()
 {
     ImGuiApplication::onCreate();
 
-    setWindowSize({2560,1440});
+    setWindowSize({1024,768});
 
     preloadShaderInclude("../assets/shaderlib/gbuffer.glsl", "/gbuffer.glsl");
     preloadShaderInclude("../assets/shaderlib/cookTorrance.glsl", "/cookTorrance.glsl");
@@ -201,17 +201,7 @@ void Application::onCreate()
 
 
     // Interface
-
     _interface.init();
-
-    _lightInterface = std::make_shared<LightInterface>();
-    _interface.addView(_lightInterface);
-
-    _sceneInterface = std::make_shared<SceneInterface>();
-    _interface.addView(_sceneInterface);
-
-    _clusterInterface = std::make_shared<PointLightClusterInterface>();
-    _interface.addView(_clusterInterface);
 }
 
 void Application::preloadShaderInclude(const char *filepath, std::string glslIncludePath) const
@@ -258,7 +248,7 @@ void Application::onUpdate(
     std::transform(std::begin(_materialMap), std::end(_materialMap), std::back_inserter(materialNames),
         [](const std::pair<std::string, std::shared_ptr<Material>> &p) { return p.first; });
 
-    _sceneInterface->setMaterials(materialNames);
+    _interface.setMaterials(materialNames);
 
     if (_keyboardInput->isKeyTapped(GLFW_KEY_P)) {
         _screenshotRequested = true;
@@ -324,16 +314,16 @@ void Application::onUpdate(
                 _autoscreenshotOutFile.open("autoscreenshot_log.txt", std::ios_base::app);
             }
 
-            const int numFrames = _lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ? 1000 : 5;
+            const int numFrames = _interface.getArealightMethod() == AREALIGHT_GROUNDTRUTH ? 1000 : 5;
 
             _timeSum += _frameTimeMs;
 
             // finalize previous step - all frames done for this one
             if (_autoscreenshotFrame == numFrames * (_autoscreenshotStep+1)) {
                 // log time
-                _autoscreenshotOutFile << "method=" << static_cast<int>(_lightInterface->getArealightMethod());
+                _autoscreenshotOutFile << "method=" << static_cast<int>(_interface.getArealightMethod());
                 _autoscreenshotOutFile << "\rroughness=" << std::max(0.05f, _autoscreenshotStep * 0.2f);
-                _autoscreenshotOutFile << "\rtime=" << (_lightInterface->getArealightMethod() == AREALIGHT_GROUNDTRUTH ?
+                _autoscreenshotOutFile << "\rtime=" << (_interface.getArealightMethod() == AREALIGHT_GROUNDTRUTH ?
                     _timeSum :
                     _timeSum / numFrames) << std::endl;
                 // go to next step
@@ -342,7 +332,7 @@ void Application::onUpdate(
 
             // first frame of the new step
             if (_autoscreenshotStep <= 5 && _autoscreenshotFrame == numFrames * _autoscreenshotStep) {
-                _sceneInterface->setRoughness(std::max(0.05f, _autoscreenshotStep * 0.2f));
+                _interface.setRoughness(std::max(0.05f, _autoscreenshotStep * 0.2f));
                 _timeSum = 0.0;
                 _restartIncrementalRendering = true;
             }
@@ -384,26 +374,26 @@ void Application::onRender()
     _deferredPipeline->setProjectionMatrix(projMatrix);
     _deferredPipeline->setMaterialID(0.1f);
 
-    _materialMap[_sceneInterface->getMaterialId()].second->bind();
+    _materialMap[_interface.getMaterialId()].second->bind();
 
-    _deferredPipeline->getShader()->setUniform("SolidMode", _sceneInterface->getSceneId());
-    _deferredPipeline->getShader()->setUniform("MetalnessConst", _sceneInterface->getMetalness());
-    _deferredPipeline->getShader()->setUniform("RoughnessConst", _sceneInterface->getRoughness());
+    _deferredPipeline->getShader()->setUniform("SolidMode", _interface.getSceneId());
+    _deferredPipeline->getShader()->setUniform("MetalnessConst", _interface.getMetalness());
+    _deferredPipeline->getShader()->setUniform("RoughnessConst", _interface.getRoughness());
 
     _planeMesh->render();
 
-    auto lightWorldMatrix = glm::translate({}, _lightInterface->getPosition()) *
+    auto lightWorldMatrix = glm::translate({}, _interface.getPosition()) *
         glm::rotate(
             glm::mat4{},
-            glm::radians(_lightInterface->getRotation().x),
+            glm::radians(_interface.getRotation().x),
             glm::vec3{1.0f, 0.0f, 0.0f}
         ) *
         glm::rotate(
             glm::mat4{},
-            glm::radians(_lightInterface->getRotation().y),
+            glm::radians(_interface.getRotation().y),
             glm::vec3{0.0f, 1.0f, 0.0f}
         ) *
-        glm::scale({}, glm::vec3{_lightInterface->getSize(), 1.0f});
+        glm::scale({}, glm::vec3{_interface.getSize(), 1.0f});
 
     auto planeUpMatrix = glm::rotate(glm::mat4{}, glm::radians(90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     _deferredPipeline->setModelMatrix(lightWorldMatrix * planeUpMatrix);
@@ -414,12 +404,9 @@ void Application::onRender()
 
     _deferredPipeline->endGeometryPass();
 
-    // this will be done once valid architecture shape will emerge
-    _deferredPipeline->startLightingPass();
-    _deferredPipeline->endLightingPass();
     auto gbufferResolution = _deferredPipeline->getFramebufferSize();
 
-    auto mode = _lightInterface->getArealightMethod();
+    auto mode = _interface.getArealightMethod();
 
     glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
     glViewport(0, 0, gbufferResolution.x, gbufferResolution.y);
@@ -471,24 +458,24 @@ void Application::onRender()
     }
     else if (mode == AREALIGHT_LTC)
     {
-        _ltc->setFlux(_lightInterface->getFlux());
+        _ltc->setFlux(_interface.getFlux());
         _ltc->setCamera(viewMatrix);
         _ltc->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _ltc->render();
     }
     else if (mode == AREALIGHT_CLUSTER)
     {
-        _pointLightCluster->setLightFlux(_lightInterface->getFlux());
-        _pointLightCluster->setClusterSize(_clusterInterface->getClusterSize());
+        _pointLightCluster->setLightFlux(_interface.getFlux());
+        _pointLightCluster->setClusterSize(_interface.getClusterSize());
         _pointLightCluster->setCamera(viewMatrix, projMatrix);
         _pointLightCluster->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _pointLightCluster->render();
     }
     else if (mode == AREALIGHT_GROUNDTRUTH)
     {
-        auto lightSize = _lightInterface->getSize();
+        auto lightSize = _interface.getSize();
         auto lightArea = lightSize.x * lightSize.y;
-        _groundTruth->setRadiosity(_lightInterface->getFlux() / lightArea);
+        _groundTruth->setRadiosity(_interface.getFlux() / lightArea);
         _groundTruth->setCamera(viewMatrix, projMatrix);
         _groundTruth->setLights({{{1.0f, 1.0f, 1.0f}, lightWorldMatrix}});
         _groundTruth->render();
@@ -519,7 +506,7 @@ void Application::onRender()
         auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
         std::string methodName = "";
-        switch (_lightInterface->getArealightMethod()) {
+        switch (_interface.getArealightMethod()) {
         case AREALIGHT_DISABLED:
             methodName = "disabled";
             break;
@@ -541,8 +528,8 @@ void Application::onRender()
 
         std::stringstream ss;
         ss << methodName;
-        ss << "-flux-" << _lightInterface->getFlux();
-        ss << "-roughness-" << _sceneInterface->getRoughness();
+        ss << "-flux-" << _interface.getFlux();
+        ss << "-roughness-" << _interface.getRoughness();
         ss << std::put_time(std::localtime(&in_time_t), "-%Y-%m-%d-%H-%M-%S");
         if (_screenshotAnnotation.length() > 0) {
             ss << "-" << _screenshotAnnotation;
