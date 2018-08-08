@@ -41,6 +41,11 @@ protected:
     virtual bool onMouseMove(glm::dvec2 newPosition) override;
     virtual bool onMouseButton(int button, int action, int mods) override;
 
+    void preloadShaderInclude(const char *filepath, std::string glslIncludePath) const;
+    void loadMaterials();
+    void loadShaders();
+    void createFramebuffer(const glm::ivec2 &resolution);
+
     void renderClusters();
 
 private:
@@ -61,7 +66,6 @@ private:
 
     std::string _screenshotAnnotation;
 
-    std::unique_ptr<fw::ShaderProgram> _shaderProgram;
     std::unique_ptr<fw::ShaderProgram> _blitSRGBProgram;
     std::unique_ptr<fw::ShaderProgram> _clusteringShader;
 
@@ -87,24 +91,15 @@ private:
     std::shared_ptr<LinearlyTransformedCosines> _ltc;
     std::shared_ptr<GroundTruth> _groundTruth;
 
-    std::shared_ptr<Material> _scuffedIronMaterial;
-    std::shared_ptr<Material> _copperRockMaterial;
-    std::shared_ptr<Material> _woodPlanksMaterial;
-    std::shared_ptr<Material> _herringboneMaterial;
-    std::shared_ptr<Material> _metalPlateMaterial;
-    std::shared_ptr<Material> _blueMarbleMaterial;
-    std::shared_ptr<Material> _tilesMaterial;
-
     int _activeMaterial;
     std::vector<std::pair<std::string, std::shared_ptr<Material>>> _materialMap;
 
     bool _restartIncrementalRendering;
 
-    void preloadShaderInclude(const char *filepath, std::string glslIncludePath) const;
-
     bool _cameraLocked;
 
     long long _frame;
+
 };
 
 }

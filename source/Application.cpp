@@ -36,23 +36,11 @@ Application::~Application()
 void Application::onCreate()
 {
     ImGuiApplication::onCreate();
-
     setWindowSize({1024,768});
-
-    preloadShaderInclude("../assets/shaderlib/gbuffer.glsl", "/gbuffer.glsl");
-    preloadShaderInclude("../assets/shaderlib/cookTorrance.glsl", "/cookTorrance.glsl");
-
     _renderHelper = std::make_shared<RenderHelper>(this);
 
-    _pointLightCluster = std::make_shared<PointLightCluster>(_renderHelper);
-    _pointLightCluster->init();
 
-    _groundTruth = std::make_shared<GroundTruth>(_renderHelper);
-    _groundTruth->init();
-
-    _ltc = std::make_shared<LinearlyTransformedCosines>(_renderHelper);
-    _ltc->init();
-
+    // Scene
     auto planeMesh = fw::PlaneGenerator::generate({10.0f, 10.0f});
     _planeMesh = std::make_unique<fw::Mesh<fw::StandardVertex3D>>(
         planeMesh.vertices, planeMesh.indices
@@ -63,21 +51,14 @@ void Application::onCreate()
         arealightMesh.vertices, arealightMesh.indices
     );
 
-    _shaderProgram = _renderHelper->makeSimpleShader(
-        "../assets/DebugShader.vs.glsl",
-        "../assets/DebugShader.fs.glsl"
-    );
 
-    _blitSRGBProgram = _renderHelper->makeSimpleShader(
-        "../assets/TextureBlitToSRGB.vs.glsl",
-        "../assets/TextureBlitToSRGB.fs.glsl"
-    );
+    // Shader stuff
+    preloadShaderInclude("../assets/shaderlib/gbuffer.glsl", "/gbuffer.glsl");
+    preloadShaderInclude("../assets/shaderlib/cookTorrance.glsl", "/cookTorrance.glsl");
+    loadShaders();
 
-    _clusteringShader = _renderHelper->makeSimpleShader(
-        "../assets/Clustering.vs.glsl",
-        "../assets/Clustering.fs.glsl"
-    );
 
+    // Camera and controls
     _camera = std::make_shared<fw::FreeCamera>();
     _camera->setWorldPosition({0.0f, 1.0f, 5.0f});
 
@@ -88,55 +69,83 @@ void Application::onCreate()
     _cameraInputMapper.setKeyboardInput(_keyboardInput);
     _cameraInputMapper.setMouseInput(_mouseInput);
 
+
+    // Arealight methods
+    _pointLightCluster = std::make_shared<PointLightCluster>(_renderHelper);
+    _pointLightCluster->init();
+
+    _groundTruth = std::make_shared<GroundTruth>(_renderHelper);
+    _groundTruth->init();
+
+    _ltc = std::make_shared<LinearlyTransformedCosines>(_renderHelper);
+    _ltc->init();
+
+
+    // Misc rendering stuff
     glm::ivec2 resolution{2560,1440};
     _deferredPipeline = std::make_unique<DeferredRenderingPipeline>();
     _deferredPipeline->create(resolution);
 
+    createFramebuffer(resolution);
+    loadMaterials();
+
+
+    // Interface
+    _interface.init();
+
+
+    // Print useful debugging information
     GLint maxTextureUnits;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
     LOG(INFO) << "Max texture units: " << maxTextureUnits;
 
-    _scuffedIronMaterial = std::make_shared<Material>();
-    _scuffedIronMaterial->setAlbedoTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_basecolor.png");
-    _scuffedIronMaterial->setNormalTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_normal.png");
-    _scuffedIronMaterial->setMetalnessTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_metallic.png");
-    _scuffedIronMaterial->setRoughnessTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_roughness.png");
+}
 
-    _woodPlanksMaterial = std::make_shared<Material>();
-    _woodPlanksMaterial->setAlbedoTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_basecolor.png");
-    _woodPlanksMaterial->setNormalTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_normal.png");
-    _woodPlanksMaterial->setRoughnessTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_roughness.png");
-    _woodPlanksMaterial->setMetalnessTexture("../assets/textures/WoodPlankFlooring/sculptedfloorboards4_metalness.png");
+void Application::createFramebuffer(const glm::ivec2 &resolution)
+{
+    glGenFramebuffers(1, &_intermediateFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
 
-    _copperRockMaterial = std::make_shared<Material>();
-    _copperRockMaterial->setAlbedoTexture("../assets/textures/copper-rock/copper-rock1-alb.png");
-    _copperRockMaterial->setNormalTexture("../assets/textures/copper-rock/copper-rock1-normal.png");
-    _copperRockMaterial->setMetalnessTexture("../assets/textures/copper-rock/copper-rock1-metal.png");
-    _copperRockMaterial->setRoughnessTexture("../assets/textures/copper-rock/copper-rock1-rough.png");
+    glGenTextures(1, &_intermediateFBOTexture);
+    glBindTexture(GL_TEXTURE_2D, _intermediateFBOTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.x, resolution.y, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _intermediateFBOTexture, 0);
 
-    _herringboneMaterial = std::make_shared<Material>();
-    _herringboneMaterial->setAlbedoTexture("../assets/textures/herringbone/herringbone_color.png");
-    _herringboneMaterial->setNormalTexture("../assets/textures/herringbone/herringbone_normal.png");
-    _herringboneMaterial->setMetalnessTexture("../assets/textures/herringbone/herringbone_metalness.png");
-    _herringboneMaterial->setRoughnessTexture("../assets/textures/herringbone/herringbone_roughness.png");
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolution.x, resolution.y);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
-    _metalPlateMaterial = std::make_shared<Material>();
-    _metalPlateMaterial->setAlbedoTexture("../assets/textures/metal_plate/Metal_Plate_007_COLOR.jpg");
-    _metalPlateMaterial->setNormalTexture("../assets/textures/metal_plate/Metal_Plate_007_NORM.jpg");
-    _metalPlateMaterial->setMetalnessTexture("../assets/textures/common/metalness_conductor.png");
-    _metalPlateMaterial->setRoughnessTexture("../assets/textures/metal_plate/Metal_Plate_007_ROUGH.jpg");
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            LOG(ERROR) << "Framebuffer not complete!" << std::endl;
+        }
 
-    _blueMarbleMaterial = std::make_shared<Material>();
-    _blueMarbleMaterial->setAlbedoTexture("../assets/textures/blue_marble/Blue_Marble_002_COLOR.jpg");
-    _blueMarbleMaterial->setNormalTexture("../assets/textures/blue_marble/Blue_Marble_002_NORM.jpg");
-    _blueMarbleMaterial->setMetalnessTexture("../assets/textures/common/metalness_conductor.png");
-    _blueMarbleMaterial->setRoughnessTexture("../assets/textures/blue_marble/Blue_Marble_002_ROUGH.jpg");
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
-    _tilesMaterial = std::make_shared<Material>();
-    _tilesMaterial->setAlbedoTexture("../assets/textures/tiles/Tiles_013_COLOR.jpg");
-    _tilesMaterial->setNormalTexture("../assets/textures/tiles/Tiles_013_NORM.jpg");
-    _tilesMaterial->setMetalnessTexture("../assets/textures/common/metalness_conductor.png");
-    _tilesMaterial->setRoughnessTexture("../assets/textures/tiles/Tiles_013_ROUGH.jpg");
+void Application::loadShaders()
+{
+    _blitSRGBProgram = _renderHelper->makeSimpleShader(
+        "../assets/TextureBlitToSRGB.vs.glsl",
+        "../assets/TextureBlitToSRGB.fs.glsl"
+    );
+
+    _clusteringShader = _renderHelper->makeSimpleShader(
+        "../assets/Clustering.vs.glsl",
+        "../assets/Clustering.fs.glsl"
+    );
+}
+
+void Application::loadMaterials()
+{
+    auto scuffedIronMaterial = std::make_shared<Material>();
+    scuffedIronMaterial->setAlbedoTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_basecolor.png");
+    scuffedIronMaterial->setNormalTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_normal.png");
+    scuffedIronMaterial->setMetalnessTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_metallic.png");
+    scuffedIronMaterial->setRoughnessTexture("../assets/textures/Iron-Scuffed/Iron-Scuffed_roughness.png");
 
     auto marbleCheckerboard = std::make_shared<Material>();
     marbleCheckerboard->setAlbedoTexture("../assets/textures/textures.com/TexturesCom_Marble_Checkerboard_1K_albedo.png");
@@ -162,46 +171,11 @@ void Application::onCreate()
     tilesCheckerboard->setMetalnessTexture("../assets/textures/common/metalness_isolator.png");
     tilesCheckerboard->setRoughnessTexture("../assets/textures/textures.com/TexturesCom_Tiles_CheckerboardVintage_1K_roughness.png");
 
-    _materialMap.push_back({"Scuffed Iron", _scuffedIronMaterial});
-    _materialMap.push_back({"Wooden Planks", _woodPlanksMaterial});
-    _materialMap.push_back({"Copper infused rock", _copperRockMaterial});
-    _materialMap.push_back({"Herringbone", _herringboneMaterial});
-    _materialMap.push_back({"Metal plate", _metalPlateMaterial});
-    _materialMap.push_back({"Blue marble", _blueMarbleMaterial});
-    _materialMap.push_back({"Tiles", _tilesMaterial});
-
-    _materialMap.push_back({"Textures.com - Marble checkerboard", marbleCheckerboard});
-    _materialMap.push_back({"Textures.com - Polished copper", copperPolished});
-    _materialMap.push_back({"Textures.com - Polypropylene", polypropylene});
-    _materialMap.push_back({"Textures.com - Vintage tiles", tilesCheckerboard});
-
-    {
-        glGenFramebuffers(1, &_intermediateFBO);
-        glBindFramebuffer(GL_FRAMEBUFFER, _intermediateFBO);
-
-        glGenTextures(1, &_intermediateFBOTexture);
-        glBindTexture(GL_TEXTURE_2D, _intermediateFBOTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.x, resolution.y, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _intermediateFBOTexture, 0);
-
-        unsigned int rboDepth;
-        glGenRenderbuffers(1, &rboDepth);
-        glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolution.x, resolution.y);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG(ERROR) << "Framebuffer not complete!" << std::endl;
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-
-    // Interface
-    _interface.init();
+    _materialMap.push_back({"Scuffed Iron", scuffedIronMaterial});
+    _materialMap.push_back({"Marble checkerboard", marbleCheckerboard});
+    _materialMap.push_back({"Polished copper", copperPolished});
+    _materialMap.push_back({"Polypropylene", polypropylene});
+    _materialMap.push_back({"Vintage tiles", tilesCheckerboard});
 }
 
 void Application::preloadShaderInclude(const char *filepath, std::string glslIncludePath) const
@@ -265,21 +239,21 @@ void Application::onUpdate(
 
     // Automate screenshot taking
 
-    if (_keyboardInput->isKeyTapped(GLFW_KEY_F1)) {
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_1)) {
         this->setWindowSize({1024, 1024});
     }
 
-    if (_keyboardInput->isKeyTapped(GLFW_KEY_F2)) {
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_2)) {
         _camera->setEulerAngles({M_PI*(1.0/12.0), 0, 0});
         _camera->setWorldPosition({0, 0.5, 5});
     }
 
-    if (_keyboardInput->isKeyTapped(GLFW_KEY_F3)) {
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_3)) {
         _camera->setEulerAngles({0, -M_PI_4, 0});
         _camera->setWorldPosition({5, 0.3, 5});
     }
 
-    if (_keyboardInput->isKeyTapped(GLFW_KEY_F5)) {
+    if (_keyboardInput->isKeyTapped(GLFW_KEY_5)) {
         _autoscreenshot = true;
         _autoscreenshotStep = 0;
         _autoscreenshotFrame = 0;

@@ -1,2 +1,0 @@
-Source: https://3dtextures.me/2018/06/22/blue-marble-002/
-License: CC0

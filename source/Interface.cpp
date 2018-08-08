@@ -33,11 +33,10 @@ void Interface::init()
 void Interface::render()
 {
     if (ImGui::Begin("Arealights")) {
-        renderSceneSettings();
         renderLightSettings();
+        renderSceneSettings();
 
         if (ImGui::CollapsingHeader("Point Light Cluster")) {
-            ImGui::Checkbox("One way?", &_oneWay);
             ImGui::SliderInt2("Cluster size", glm::value_ptr(_clusterSize), 1, 32);
         }
     }
